@@ -64,7 +64,8 @@ RichCodeSettings:=
 
 ; clear editor vars just to be sure
 ; JJ EDIT BEGIN
- Text1=%MathHelperSnippet%
+ 
+ Text1:=Trim(MathHelperSnippet, " `t`r`n")
  ; JJ EDIT END
  Text2=
  HKey=
