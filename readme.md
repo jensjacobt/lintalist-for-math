@@ -64,8 +64,8 @@ features of Lintalist. More Lintalist documentation can be found at
 
   <dt>Link Plugin</dt>
   <dd>A plugin to insert links into Maple (and paste pure text to other
-    programs). As an example writing `This [[Link=http://dr.dk]] 
-    has a link`, will insert http://dr.dk as a link when pasted to Maple. In 
+    programs). As an example writing <code>This [[Link=http://dr.dk]] 
+  has a link</code>, will insert http://dr.dk as a link when pasted to Maple. In 
     the snippet editor, a selected URL can be given the link tag by 
     pressing <strong>Ctrl + L</strong>.</dd>
 
