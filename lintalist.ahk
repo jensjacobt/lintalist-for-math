@@ -2760,6 +2760,11 @@ If (InStr(Clip, "<<<<Link="))
 }
 Clip := Clip
 Gosub, MathSendInput
+ClipBoard = %Clip0% ; restore clipboard
+Text1=
+Text2=
+Clip=
+VarSetCapacity(Clip0, 0)
 Return
 
 
