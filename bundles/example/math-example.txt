@@ -1,6 +1,6 @@
 BundleFormat: 1
-Name: Default
-Description: Default bundle for Lintalist
+Name: Intro til Lintalist for Math
+Description: Math bundle for Lintalist
 Author: Lintalist
 TitleMatch: 
 Patterns:
