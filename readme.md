@@ -60,14 +60,14 @@ features of Lintalist. More Lintalist documentation can be found at
     Lintalist docs on plugins. As an example writing `This [[Underline=text]] 
     is formatted` in a snippet, will make "text" underlined, when pasted to 
     Maple. In the snippet editor, selected text can be given the underline tag 
-    by pressing **Ctrl + U**.</dd>
+    by pressing <strong>Ctrl + U</strong>.</dd>
 
   <dt>Link Plugin</dt>
   <dd>A plugin to insert links into Maple (and paste pure text to other
     programs). As an example writing `This [[Link=http://dr.dk]] 
     has a link`, will insert http://dr.dk as a link when pasted to Maple. In 
     the snippet editor, a selected URL can be given the link tag by 
-    pressing **Ctrl + L**.</dd>
+    pressing <strong>Ctrl + L</strong>.</dd>
 
   <dt>Math Plugin</dt>
   <dd>A plugin to paste simple formulas to Maple. See more below.</dd>
