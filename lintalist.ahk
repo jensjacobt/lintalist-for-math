@@ -2339,6 +2339,7 @@ Return
 
 BuildEditorMenu:
 ; JJ ADD BEGIN
+Menu, Plugins, Add, Insert [[Link=]]     , PluginMenuHandler
 Menu, Plugins, Add, Insert [[Math=]]     , PluginMenuHandler
 Menu, Plugins, Add, Insert [[Underline=]], PluginMenuHandler
 Menu, Plugins, Add
@@ -2540,12 +2541,36 @@ Return
 ; ctrl+u: Tilføj understregning til markering, når der redigeres i Lintalist snippet editor.
 #IfWinActive, Lintalist snippet editor ahk_class AutoHotkeyGUI
 ^u::
+NameOfThisPluginForPasting = Underline
+KeyOfThisPluginForPasting = u
+GoSub, InsertPluginPlaceholderOrWrapSelectedText
+NameOfThisPluginForPasting =
+KeyOfThisPluginForPasting =
+Return
+
+^l::
+NameOfThisPluginForPasting = Link
+KeyOfThisPluginForPasting = l
+GoSub, InsertPluginPlaceholderOrWrapSelectedText
+NameOfThisPluginForPasting =
+KeyOfThisPluginForPasting =
+Return
+
+InsertPluginPlaceholderOrWrapSelectedText:
+ControlGetFocus, ComponentCurrentlyWithFocus
+If Not (ComponentCurrentlyWithFocus = "Edit2")
+{
+  Send, ^%KeyOfThisPluginForPasting%
+  Return
+}
 ClipSaved := ClipboardAll
-Clipboard:=0
-Send, ^x
+Clipboard:=""
+Send, ^c
 Sleep 150
-Clipboard = [[Underline=%Clipboard%]]
+Clipboard = [[%NameOfThisPluginForPasting%=%Clipboard%]]
 Send, ^v
+Sleep, 150
+Send, {LEFT}{LEFT}
 Clipboard := ClipSaved
 ClipSaved =
 Return
@@ -2691,8 +2716,9 @@ If (Text1 = "")
   Text1:=Text2
 ; Lav udskiftninger fra plugins (vigtigt at det sker inden "Gosub, ProcessText")
 StringReplace, Text1, Text1, `^, {hatchar}, All
-Text1 := RegExReplace(Text1, "iU)\[\[Underline=([^[]*)\]\]",  "^u$1^u")
-Text1 := RegExReplace(Text1, "iU)\[\[Math=([^[]*)\]\]",  "^r$1^m")
+Text1 := RegExReplace(Text1, "iU)\[\[Underline=([^\]]*)\]\]",  "^u$1^u")
+Text1 := RegExReplace(Text1, "iU)\[\[Math=([^\]]*)\]\]",  "^r$1^m")
+Text1 := RegExReplace(Text1, "iU)\[\[Link=([^\]]*)\]\]", "<<<<Link=$1>>>>")
 ; Foretag udskiftninger af specielle tegn, så send-kommandoen fungerer som forventet
 StringReplace, Text1, Text1, ``, ````, All  ; Do this replacement first to avoid interfering with the others below.
 StringReplace, Text1, Text1, `r`n, ``r, All  ; Using `r works better than `n in MS Word, etc.
@@ -2707,33 +2733,68 @@ StringReplace, Text1, Text1, ``r, `^`+j`^m, All
   ;~ StringTrimRight, Text1, Text1, 5
 ;~ MsgBox, %Text1% ; for debugging
 Clip0 = %ClipBoardAll% ; store clipboard
-Clip := "^m" . Text1
+Clip := Text1
 Gosub, ProcessText ; to support all plugins except for rtf, md, image, html, and clipboard with formatting/case change
-;~ MsgBox, %Clip% ; for debugging
-If (InStr(Clip, "{hatchar}"))
+;MsgBox, %Clip% ; for debugging
+If (InStr(Clip, "<<<<Link="))
 {
-  ClipArray := StrSplit(Clip, "{hatchar}")
-  LastClip := ClipArray.Pop()
-  for index, element in ClipArray
+  ClipCopy := SubStr(Clip, 1)
+  KeyWait Alt, L, T5
+  If ErrorLevel
   {
-    SendInput, %element%
-    Sleep, 250
-    SendInput, {ASC 0094}
-    Sleep, 250
+    Return
   }
-  SendInput, %LastClip%
-  LastClip=
-  ClipArray=
+  Loop
+  {
+    If(RegExMatch(ClipCopy, "OiU)\<\<\<\<Link=([^>>>>]*)>>>>", SubPat)) {
+      Clip := Substr(ClipCopy, 1, SubPat.Pos(0) - 1)
+      Gosub, MathSendInput
+      ClipCopy := Substr(ClipCopy, SubPat.Pos(0) + SubPat.Len(0))
+      textWithURL := SubPat.Value(1)
+      Gosub, insertLinkMaple
+    }
+    If Not RegExMatch(ClipCopy, "OiU)\<\<\<\<Link=([^>>>>]*)>>>>") {
+      Clip := "" . ClipCopy
+      Break  
+    }
+  }
 }
-Else
-  SendInput, ^m%Clip%
-  ;SendKey(SendMethod, Clip)
+Clip := Clip
+Gosub, MathSendInput
 ClipBoard = %Clip0% ; restore clipboard
 Text1=
 Text2=
 Clip=
 VarSetCapacity(Clip0, 0)
 Return
+
+
+
+MathSendInput:
+;MsgBox, %Clip% ; for debugging
+Send, ^m
+If (InStr(Clip, "{hatchar}"))
+{
+  ClipArray := StrSplit(Clip, "{hatchar}")
+  LastClip := ClipArray.Pop()
+  for index, element in ClipArray
+  {
+    Sleep, 150
+    SendInput, %element%
+    Sleep, 150
+    SendInput, {ASC 0094}{Space}
+    SendInput, {Backspace}
+    Sleep, 150
+  }
+  SendInput, %LastClip%
+  LastClip=
+  ClipArray=
+}
+Else {
+  SendInput, %Clip%
+}
+Return
+
 
 
 NotMathPaste:
@@ -2747,7 +2808,37 @@ StringReplace, Text2, Text2, `^`^, `^, All
 StringReplace, Text2, Text2, `{right`}, , All
 StringReplace, Text2, Text2, %A_Tab%, ``t, All
 StringReplace, Text2, Text2, `;, ```;, All
+
+Text1 := RegExReplace(Text1, "iU)\[\[Link=([^\]]*)\]\]", "$1")
 Return
+
+
+
+
+insertLinkMaple:
+Send, ^t
+Sleep, 50
+SendEvent, {ALT DOWN}ihh{ALT UP}
+Sleep, 50
+Send, {ENTER}
+WinWaitActive, Hyperlink Properties, , 1
+if ErrorLevel
+{
+	MsgBox, Fejl.
+  Return
+}
+else
+{
+	Winclip.Paste(textWithURL)
+  Sleep, 50
+	SendEvent, {TAB 3}
+  Sleep, 50
+	Winclip.Paste(textWithURL)
+	Send, {ENTER}
+}
+Sleep, 150
+Return
+
 
 
 ; JJ ADD END

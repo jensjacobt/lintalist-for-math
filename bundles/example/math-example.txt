@@ -1,36 +1,36 @@
-﻿BundleFormat: 1
-Name: Default
-Description: Default bundle for Lintalist
+BundleFormat: 1
+Name: Intro til Lintalist for Math
+Description: Math bundle for Lintalist
 Author: Lintalist
 TitleMatch: 
 Patterns:
 - LLPart1: win+a: Giv tekstmarkeringen gul baggrundsfarve i Maple                                                                                                                                                                               
-NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration.
+NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration > MathYellowBGHotkey.
   LLPart2: 
   LLKey: 
   LLShorthand: 
   LLScript: 
 - LLPart1: win+w: Giv Maple Input rød farve, zoom til 100 % og udfold alle sektioner.                                                                                                                                                                               
-NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration.
+NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration > MathSetUpHotkey.
   LLPart2: 
   LLKey: 
   LLShorthand: 
   LLScript: 
 - LLPart1: win+z: Giv tekstmarkeringen halvgennemsigtig orange farve i Maple                                                                                                                                                                               
-NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration.
+NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration > MathOrangeTextHotkey.
   LLPart2: 
   LLKey: 
   LLShorthand: 
   LLScript: 
 - LLPart1: win+v: Indsæt udklipsholderen som ren tekst (hvilket afhjælper noget formateringsbøvl i Maple)                                                                                                                                                                               
-NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration.
+NB: Dette er blot til information. Selve genvejstasten kan ændres i menuen Edit > Configration > MathPastePureHotkey.
   LLPart2: 
   LLKey: 
   LLShorthand: 
   LLScript: 
 - LLPart1: Dette er et eksempel med et matematisk udtryk [[Math=x^t+2{right}+2x]], et par linjeskift
 
-og lidt [[Underline=understreget tekst]], så man kan se et par muligheder.
+og lidt [[Underline=understreget tekst]] samt et link til [[Link=http://dr.dk]], så man kan se et par muligheder.
   LLPart2: 
   LLKey: 
   LLShorthand: lineks
