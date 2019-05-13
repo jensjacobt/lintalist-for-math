@@ -2541,35 +2541,36 @@ Return
 ; ctrl+u: Tilføj understregning til markering, når der redigeres i Lintalist snippet editor.
 #IfWinActive, Lintalist snippet editor ahk_class AutoHotkeyGUI
 ^u::
-ControlGetFocus, ComponentCurrentlyWithFocus
-If Not (ComponentCurrentlyWithFocus = "Edit2")
-{
-  Send, ^u
-  Return
-}
-ClipSaved := ClipboardAll
-Clipboard:=""
-Send, ^c
-Sleep 150
-Clipboard = [[Underline=%Clipboard%]]
-Send, ^v
-Clipboard := ClipSaved
-ClipSaved =
+NameOfThisPluginForPasting = Underline
+KeyOfThisPluginForPasting = u
+GoSub, InsertPluginPlaceholderOrWrapSelectedText
+NameOfThisPluginForPasting =
+KeyOfThisPluginForPasting =
 Return
 
 ^l::
+NameOfThisPluginForPasting = Link
+KeyOfThisPluginForPasting = l
+GoSub, InsertPluginPlaceholderOrWrapSelectedText
+NameOfThisPluginForPasting =
+KeyOfThisPluginForPasting =
+Return
+
+InsertPluginPlaceholderOrWrapSelectedText:
 ControlGetFocus, ComponentCurrentlyWithFocus
 If Not (ComponentCurrentlyWithFocus = "Edit2")
 {
-  Send, ^l
+  Send, ^%KeyOfThisPluginForPasting%
   Return
 }
 ClipSaved := ClipboardAll
 Clipboard:=""
 Send, ^c
 Sleep 150
-Clipboard = [[Link=%Clipboard%]]
+Clipboard = [[%NameOfThisPluginForPasting%=%Clipboard%]]
 Send, ^v
+Sleep, 150
+Send, {LEFT}{LEFT}
 Clipboard := ClipSaved
 ClipSaved =
 Return
