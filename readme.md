@@ -23,7 +23,7 @@ features of Lintalist. More Lintalist documentation can be found at
 
 <dl>
   <dt>Changed Default Trigger Keys</dt>
-  <dd>Both the keys "-" and "_" will the Shorthand (abbreviation) if applicable.</dd>
+  <dd>Both the keys "-" and "\_" will the Shorthand (abbreviation) if applicable.</dd>
   
   <dt>Setup Maple for Commenting (Win + W)</dt>
   <dd>In Maple, give Maple Input a red color, unfold all sections,
@@ -56,21 +56,32 @@ features of Lintalist. More Lintalist documentation can be found at
 
   <dt>Underline Plugin</dt>
   <dd>A plugin for Lintalist for Math that underlines the plugin text if
-  snippet is pasted to Maple, but pastes pure text in other programs. Refer to
-    Lintalist docs on plugins. In the snippet editor, the selected text can
-    be given the underline tag by pressing Ctrl + U.</dd>
+    snippet is pasted to Maple, but pastes pure text in other programs. Refer to
+    Lintalist docs on plugins. As an example writing `This [[Underline=text]] 
+    is formatted` in a snippet, will make "text" underlined, when pasted to 
+    Maple. In the snippet editor, selected text can be given the underline tag 
+    by pressing **Ctrl + U**.</dd>
+
+  <dt>Link Plugin</dt>
+  <dd>A plugin to insert links into Maple (and paste pure text to other
+    programs). As an example writing `This [[Link=http://dr.dk]] 
+    has a link`, will insert http://dr.dk as a link when pasted to Maple. In 
+    the snippet editor, a selected URL can be given the link tag by 
+    pressing **Ctrl + L**.</dd>
 
   <dt>Math Plugin</dt>
-  <dd>A plugin for Lintalist for Math paste formulas to Maple. See more below.</dd>
+  <dd>A plugin to paste simple formulas to Maple. See more below.</dd>
+  
+
 </dl>
 
 ### Math Plugin
 
 For example, you could put `[[Math=x^t+2{right}+2x]]` to get
-<i>x</i><sup><i>t</i>+2</sup> + 2<i>x</i> when pasted to Maple. The `[[Math` and
-`]]` parts are default plugin syntax. The content `x^t+2{right}+2x` is basically
-the key presses you would make to type the same expression in Maple. Notice
-in particular the `{right}` to send a right arrow key press.
+<i>x</i><sup><i>t</i>+2</sup> + 2<i>x</i> when pasted to Maple. The `[[Math=` 
+and `]]` parts are default plugin syntax. The content `x^t+2{right}+2x` is 
+basically the key presses you would make to type the same expression in Maple. 
+Notice in particular the `{right}` to send a right arrow key press.
 
 Experiment to make more complex examples.
 
@@ -80,8 +91,7 @@ Experiment to make more complex examples.
    release](https://github.com/jensjacobt/lintalist-for-math/releases) - unpack
    to a new directory and run lintalist.exe (or lintalist.ahk if you are already
    an AutoHotkey user).
-2. AutoHotkey users (or installing updates): Download the
-   [master.zip](https://github.com/jensjacobt/lintalist-for-math/archive/master.zip) - unpack to a new (or your current Lintalist) directory and run lintalist.ahk.
+2. Installing updates: Download the [master.zip](https://github.com/jensjacobt/lintalist-for-math/archive/master.zip) - unpack to a new (or your current Lintalist) directory and run lintalist.exe.
 
 # AutoHotkey
 
