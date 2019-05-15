@@ -4,7 +4,7 @@ Name            : Lintalist for Math
 Author          : Lintalist & jensjacobt
 Purpose         : Searchable interactive lists to copy & paste text, run scripts,
                   using easily exchangeable bundles
-Version         : 1.9.6a
+Version         : 1.9.6b
 Code            : https://github.com/jensjacobt/lintalist-for-math
 Website         :
 AHKscript Forum :
@@ -223,6 +223,7 @@ Hotkey, %StartSearchHotkey%, GUIStart
 ; JJ ADD BEGIN
 If (MathSnippetHelperHotkey <> "")
 	Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
+Hotkey, #+h, MathImageHelperStart
 ; JJ ADD END
 If (StartOmniSearchHotkey <> "")
 	Hotkey, %StartOmniSearchHotkey%, GUIStartOmni
@@ -2660,6 +2661,38 @@ GoSub, EditF7
 Return
 
 
+
+MathImageHelperStart:
+MathImageHelperUUID := CreateUUID() 
+MathImageHelperFile := A_ScriptDir . "\bundles\images\" . MathImageHelperUUID . ".clip"
+If Not (Winclip.Save(MathImageHelperFile))
+{
+  MsgBox % "Lintalist for Math kunne ikke finde et billede i udklipsholderen. (Denne genvejstast opretter et billede i en snippet, hvis der er et billede i udklipsholderen, som programmet kan genkende.)"
+  Return
+}
+
+GoSub, GUIStart
+WinWaitActive, ahk_class AutoHotkeyGUI, , 3
+If ErrorLevel
+{
+	Gui, 1:Destroy
+	Return
+}
+MathHelperSnippet := "[[MathClip=" . MathImageHelperUUID . "]]"
+GoSub, EditF7
+Return
+
+CreateUUID()
+{
+    VarSetCapacity(puuid, 16, 0)
+    if !(DllCall("rpcrt4.dll\UuidCreate", "ptr", &puuid))
+        if !(DllCall("rpcrt4.dll\UuidToString", "ptr", &puuid, "uint*", suuid))
+            return StrGet(suuid), DllCall("rpcrt4.dll\RpcStringFree", "uint*", suuid)
+    return ""
+}
+
+
+
 ; Giv Maple Input rød farve, zoom til 100 % og udfold alle sektioner.
 MathSetUpCommenting:
 SendEvent {ALT DOWN}rs{ALT UP}
@@ -2715,6 +2748,19 @@ MathPaste:
 If (Text1 = "")
   Text1:=Text2
 ; Lav udskiftninger fra plugins (vigtigt at det sker inden "Gosub, ProcessText")
+If (InStr(Text1, "[[MathClip="))
+{
+  If(RegExMatch(Text1, "OiU)\[\[MathClip=([^\]]*)]]", SubPat)) {
+    WinClip.Snap(Clip0)
+    If(WinClip.Load(A_ScriptDir . "\bundles\images\" . SubPat.Value(1) ".clip"))
+    {
+      Send, ^v
+      Sleep, 150
+    }
+    WinClip.Restore(Clip0)
+    Return
+  }
+}
 StringReplace, Text1, Text1, `^, {hatchar}, All
 Text1 := RegExReplace(Text1, "iU)\[\[Underline=([^\]]*)\]\]",  "^u$1^u")
 Text1 := RegExReplace(Text1, "iU)\[\[Math=([^\]]*)\]\]",  "^r$1^m")
@@ -2765,6 +2811,9 @@ ClipBoard = %Clip0% ; restore clipboard
 Text1=
 Text2=
 Clip=
+ClipCopy=
+SupPat=
+textWithURL=
 VarSetCapacity(Clip0, 0)
 Return
 

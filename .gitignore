@@ -7,7 +7,6 @@
 
 /bundles/*
 !/bundles/example
-!/bundles/default.txt
 
 /local/*
 !/local/example
