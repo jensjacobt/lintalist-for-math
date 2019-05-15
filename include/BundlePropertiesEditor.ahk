@@ -179,7 +179,9 @@ If (SelectedListboxBundle = "")
 		 ControlFocus, Edit1, A
 		 Return
 	 	}
-	 InputBox, NewBundleFileName, Save as, File name of new bundle, , 400, 150
+   ; JJ EDIT BEGIN
+	 InputBox, NewBundleFileName, Save as, File name of new bundle, , 400, 150, , , , , % Name
+   ; JJ EDIT END
 	 If (NewBundleFileName = "")
 		{
 		 MsgBox, Please enter filename
