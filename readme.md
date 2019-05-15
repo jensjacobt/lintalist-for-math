@@ -37,6 +37,15 @@ features of Lintalist. More Lintalist documentation can be found at
 
   <dt>Snippet Helper (Win + H)</dt>
   <dd>Add a new snippet from the selected text (using dialogs).</dd>
+  
+  <dt>Image helper (Win + Shift + H)</dt>
+  <dd>Add a new image (clipboard copy) from current clipboard (using dialogs).
+  This will store the current clipboard contents in a .clip file in the
+  bundles/clips/ folder, and open a snippet creation dialog with some code
+  that should not be changed. When the snippet is called, it will paste
+  the contents of the copied clipboard to the open program. Please note that
+  this does not consistens paste math copied from Maple -- after a 
+  computer reboot the formatting will not be correct.</dd>
 
   <dt>Paste Pure Text (Win + V)</dt>
   <dd>Pastes content of clipboard as pure text. This helps with some
@@ -64,15 +73,13 @@ features of Lintalist. More Lintalist documentation can be found at
 
   <dt>Link Plugin</dt>
   <dd>A plugin to insert links into Maple (and paste pure text to other
-    programs). As an example writing `This [[Link=http://dr.dk]] 
-    has a link`, will insert http://dr.dk as a link when pasted to Maple. In 
+    programs). As an example writing <code>This [[Link=http://dr.dk]] 
+    has a link</code>, will insert http://dr.dk as a link when pasted to Maple. In 
     the snippet editor, a selected URL can be given the link tag by 
     pressing <strong>Ctrl + L</strong>.</dd>
 
   <dt>Math Plugin</dt>
   <dd>A plugin to paste simple formulas to Maple. See more below.</dd>
-  
-
 </dl>
 
 ### Math Plugin
