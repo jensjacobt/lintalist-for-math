@@ -100,6 +100,7 @@ INISetup["MathRedTextHotkey"]       := {default:"#c"}
 INISetup["MathPastePureHotkey"]     := {default:"#v"}
 INISetup["MathSetUpHotkey"]         := {default:"#w"}
 INISetup["MathSnippetHelperHotkey"] := {default:"#h"}
+INISetup["MathImageHelperHotkey"]   := {default:"#+h"}
 INISetup["MathReloadAllHotkey"]     := {default:"#q"}
 ; JJ ADD END      
 

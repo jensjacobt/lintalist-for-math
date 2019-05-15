@@ -4,7 +4,7 @@ Name            : Lintalist for Math
 Author          : Lintalist & jensjacobt
 Purpose         : Searchable interactive lists to copy & paste text, run scripts,
                   using easily exchangeable bundles
-Version         : 1.9.6a
+Version         : 1.9.6b
 Code            : https://github.com/jensjacobt/lintalist-for-math
 Website         :
 AHKscript Forum :
@@ -46,7 +46,7 @@ PluginMultiCaret:=0 ; TODOMC
 
 ; Title + Version are included in Title and used in #IfWinActive hotkeys and WinActivate
 Title=Lintalist for Math
-Version=1.9.6a
+Version=1.9.6b
 
 ; JJ EDIT BEGIN
 MathHelperSnippet := ""
@@ -220,16 +220,19 @@ Loop, parse, ProgramHotKeyList, CSV
 
 Hotkey, IfWinNotExist, ahk_group BundleHotkeys
 Hotkey, %StartSearchHotkey%, GUIStart
-; JJ ADD BEGIN
-If (MathSnippetHelperHotkey <> "")
-	Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
-; JJ ADD END
 If (StartOmniSearchHotkey <> "")
 	Hotkey, %StartOmniSearchHotkey%, GUIStartOmni
 If (QuickSearchHotkey <> "")
 	Hotkey, %QuickSearchHotkey%, ShortText
 If (ExitProgramHotKey <> "")
 	Hotkey, %ExitProgramHotKey%, SaveSettings
+; JJ ADD BEGIN
+; Set up snippet helper hotkeys
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathImageHelperHotkey%, MathImageHelperStart
+; JJ ADD END
 Hotkey, IfWinNotExist
 
 ; JJ ADD BEGIN
@@ -723,6 +726,9 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		 StringReplace, Text2, Text2, [[Clipboard]], %Clipboard%, All
 		}
 	; JJ ADD BEGIN
+  If (MathImagePaste(Text1))
+    Return
+  
   Gosub, PastingToMaple
   If isMaple
   {
@@ -2660,6 +2666,44 @@ GoSub, EditF7
 Return
 
 
+
+
+MathImageHelperStart:
+MathImageHelperUUID := CreateUUID() 
+MathImageHelperFolder := A_ScriptDir . "\bundles\clips\"
+MathImageHelperFile := MathImageHelperFolder . MathImageHelperUUID . ".clip"
+IfNotExist, %MathImageHelperFolder%
+  FileCreateDir, %MathImageHelperFolder%
+If Not (Winclip.Save(MathImageHelperFile))
+{
+  MsgBox % "Lintalist for Math kunne ikke finde et billede i udklipsholderen. (Denne genvejstast opretter et billede i en snippet, hvis der er et billede i udklipsholderen, som programmet kan genkende.)"
+  Return
+}
+
+GoSub, GUIStart
+WinWaitActive, ahk_class AutoHotkeyGUI, , 3
+If ErrorLevel
+{
+	Gui, 1:Destroy
+	Return
+}
+MathHelperSnippet := "[[MathClip=" . MathImageHelperUUID . "]]"
+GoSub, EditF7
+Return
+
+
+
+CreateUUID()
+{
+    VarSetCapacity(puuid, 16, 0)
+    if !(DllCall("rpcrt4.dll\UuidCreate", "ptr", &puuid))
+        if !(DllCall("rpcrt4.dll\UuidToString", "ptr", &puuid, "uint*", suuid))
+            return StrGet(suuid), DllCall("rpcrt4.dll\RpcStringFree", "uint*", suuid)
+    return ""
+}
+
+
+
 ; Giv Maple Input rød farve, zoom til 100 % og udfold alle sektioner.
 MathSetUpCommenting:
 SendEvent {ALT DOWN}rs{ALT UP}
@@ -2765,6 +2809,9 @@ ClipBoard = %Clip0% ; restore clipboard
 Text1=
 Text2=
 Clip=
+ClipCopy=
+SupPat=
+textWithURL=
 VarSetCapacity(Clip0, 0)
 Return
 
@@ -2839,6 +2886,32 @@ else
 Sleep, 150
 Return
 
+
+
+/**
+ * Paste clip if plugin substring present
+ * @param {String} Text1 Snippet text
+ * @return true if image was pasting, otherwise false 
+ */
+MathImagePaste(ByRef Text1)
+{
+  If (InStr(Text1, "[[MathClip="))
+  {
+    If(RegExMatch(Text1, "OiU)\[\[MathClip=([^\]]*)]]", SubPat)) {
+      WinClip.Snap(Clip0)
+      If(WinClip.Load(A_ScriptDir . "\bundles\clips\" . SubPat.Value(1) ".clip"))
+      {
+        Sleep, 150
+        Send, ^v
+        Sleep, 150
+      }
+      WinClip.Restore(Clip0)
+      Return 1
+    }
+  }
+  Else
+    Return 0
+}
 
 
 ; JJ ADD END
