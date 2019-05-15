@@ -44,7 +44,7 @@ features of Lintalist. More Lintalist documentation can be found at
   bundles/clips/ folder, and open a snippet creation dialog with some code
   that should not be changed. When the snippet is called, it will paste
   the contents of the copied clipboard to the open program. Please note that
-  this does not consistens paste math copied from Maple -- after a 
+  this does not consistently paste math copied from Maple – after a 
   computer reboot the formatting will not be correct.</dd>
 
   <dt>Paste Pure Text (Win + V)</dt>
