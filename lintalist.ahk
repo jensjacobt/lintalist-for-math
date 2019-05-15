@@ -46,7 +46,7 @@ PluginMultiCaret:=0 ; TODOMC
 
 ; Title + Version are included in Title and used in #IfWinActive hotkeys and WinActivate
 Title=Lintalist for Math
-Version=1.9.6a
+Version=1.9.6b
 
 ; JJ EDIT BEGIN
 MathHelperSnippet := ""
@@ -220,17 +220,19 @@ Loop, parse, ProgramHotKeyList, CSV
 
 Hotkey, IfWinNotExist, ahk_group BundleHotkeys
 Hotkey, %StartSearchHotkey%, GUIStart
-; JJ ADD BEGIN
-If (MathSnippetHelperHotkey <> "")
-	Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
-Hotkey, #+h, MathImageHelperStart
-; JJ ADD END
 If (StartOmniSearchHotkey <> "")
 	Hotkey, %StartOmniSearchHotkey%, GUIStartOmni
 If (QuickSearchHotkey <> "")
 	Hotkey, %QuickSearchHotkey%, ShortText
 If (ExitProgramHotKey <> "")
 	Hotkey, %ExitProgramHotKey%, SaveSettings
+; JJ ADD BEGIN
+; Set up snippet helper hotkeys
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathImageHelperHotkey%, MathImageHelperStart
+; JJ ADD END
 Hotkey, IfWinNotExist
 
 ; JJ ADD BEGIN
