@@ -367,16 +367,24 @@ Global IniFile
 FileAppend, 
 (
 BundleFormat: 1
-Name: Default
-Description: Default bundle for Lintalist
+Name: Default bundle for Lintalist for Math
+Description: Math bundle for Lintalist
 Author: Lintalist
 TitleMatch: 
 Patterns:
-- LLPart1: This is Snippet Part 1, refer to documentation for further info.
-  LLPart2: This is Snippet Part 2
+- LLPart1: This is an example of a mathematical expression [[Math=x^t+2{right}+2x]], here are some new lines,
+
+and a bit of [[Underline=underlined text]] as well as a link to [[Link=http://dr.dk]] (when pasted to Maple!).
+
+Lintalist for Math builds on Lintalist.
+Documentation for Lintalist:
+[[Link=https://lintalist.github.io/]]
+Dokumentation til Lintalist for Math (brief):
+[[Link=https://github.com/jensjacobt/lintalist-for-math]]
+  LLPart2: 
   LLKey: 
-  LLShorthand:
-  LLScript:
+  LLShorthand: linexample
+  LLScript: 
 ), %A_ScriptDir%\bundles\default.txt, UTF-8
 DefaultBundle:="default.txt"
 IniWrite, default.txt, %A_ScriptDir%\%IniFile%, Settings, AlwaysLoadBundles
