@@ -2826,11 +2826,8 @@ If (InStr(Clip, "{hatchar}"))
   LastClip := ClipArray.Pop()
   for index, element in ClipArray
   {
-    Sleep, 150
     SendInput, %element%
-    Sleep, 150
-    SendInput, {ASC 0094}{Space}
-    SendInput, {Backspace}
+    SendInput, +{^}
     Sleep, 150
   }
   SendInput, %LastClip%
