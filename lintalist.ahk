@@ -726,6 +726,9 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		 StringReplace, Text2, Text2, [[Clipboard]], %Clipboard%, All
 		}
 	; JJ ADD BEGIN
+  If (MathImagePaste(Text1))
+    Return
+  
   Gosub, PastingToMaple
   If isMaple
   {
@@ -2664,9 +2667,13 @@ Return
 
 
 
+
 MathImageHelperStart:
 MathImageHelperUUID := CreateUUID() 
-MathImageHelperFile := A_ScriptDir . "\bundles\images\" . MathImageHelperUUID . ".clip"
+MathImageHelperFolder := A_ScriptDir . "\bundles\clips\"
+MathImageHelperFile := MathImageHelperFolder . MathImageHelperUUID . ".clip"
+IfNotExist, %MathImageHelperFolder%
+  FileCreateDir, %MathImageHelperFolder%
 If Not (Winclip.Save(MathImageHelperFile))
 {
   MsgBox % "Lintalist for Math kunne ikke finde et billede i udklipsholderen. (Denne genvejstast opretter et billede i en snippet, hvis der er et billede i udklipsholderen, som programmet kan genkende.)"
@@ -2683,6 +2690,8 @@ If ErrorLevel
 MathHelperSnippet := "[[MathClip=" . MathImageHelperUUID . "]]"
 GoSub, EditF7
 Return
+
+
 
 CreateUUID()
 {
@@ -2750,19 +2759,6 @@ MathPaste:
 If (Text1 = "")
   Text1:=Text2
 ; Lav udskiftninger fra plugins (vigtigt at det sker inden "Gosub, ProcessText")
-If (InStr(Text1, "[[MathClip="))
-{
-  If(RegExMatch(Text1, "OiU)\[\[MathClip=([^\]]*)]]", SubPat)) {
-    WinClip.Snap(Clip0)
-    If(WinClip.Load(A_ScriptDir . "\bundles\images\" . SubPat.Value(1) ".clip"))
-    {
-      Send, ^v
-      Sleep, 150
-    }
-    WinClip.Restore(Clip0)
-    Return
-  }
-}
 StringReplace, Text1, Text1, `^, {hatchar}, All
 Text1 := RegExReplace(Text1, "iU)\[\[Underline=([^\]]*)\]\]",  "^u$1^u")
 Text1 := RegExReplace(Text1, "iU)\[\[Math=([^\]]*)\]\]",  "^r$1^m")
@@ -2890,6 +2886,32 @@ else
 Sleep, 150
 Return
 
+
+
+/**
+ * Paste clip if plugin substring present
+ * @param {String} Text1 Snippet text
+ * @return true if image was pasting, otherwise false 
+ */
+MathImagePaste(ByRef Text1)
+{
+  If (InStr(Text1, "[[MathClip="))
+  {
+    If(RegExMatch(Text1, "OiU)\[\[MathClip=([^\]]*)]]", SubPat)) {
+      WinClip.Snap(Clip0)
+      If(WinClip.Load(A_ScriptDir . "\bundles\clips\" . SubPat.Value(1) ".clip"))
+      {
+        Sleep, 150
+        Send, ^v
+        Sleep, 150
+      }
+      WinClip.Restore(Clip0)
+      Return 1
+    }
+  }
+  Else
+    Return 0
+}
 
 
 ; JJ ADD END
