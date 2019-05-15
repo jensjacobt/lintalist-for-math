@@ -725,22 +725,6 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		 StringReplace, Text1, Text1, [[Clipboard]], %Clipboard%, All
 		 StringReplace, Text2, Text2, [[Clipboard]], %Clipboard%, All
 		}
-	; JJ ADD BEGIN
-  If (MathImagePaste(Text1))
-    Return
-  
-  Gosub, PastingToMaple
-  If isMaple
-  {
-    Gosub, MathPaste
-    OmniSearch:=0
-    Typed:=""
-    Return
-  }
-  Else
-    Gosub, NotMathPaste
-	; JJ ADD END
-
 	 If (PastText1 = 1) OR (Text2 = "")
 		Clip:=Text1
 	 Else If (PastText1 = 0) ; if shift-enter use Text2 BUT if it is empty revert to Text1
@@ -750,6 +734,23 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		}
 	 If (Text1 = "") and (Text2 <> "")   ; if Text1 is empty check if Text2 has content so we can paste that
 		Clip:=Text2
+
+   ; JJ ADD BEGIN
+   If (MathImagePaste(Text1))
+   Return
+
+   Gosub, PastingToMapleOrNot
+   If isMaple
+   {
+     Gosub, MathPaste
+     OmniSearch:=0
+     Typed:=""
+     Return
+   }
+   Else
+   Gosub, NotMathPaste
+   ; JJ ADD END
+    
 	 ClipSet("s",1,SendMethod,Clipboard) ; store in clip1
 	 ClearClipboard()
 	 ; process formatted text: HTML, Markdown, RTF and Image
@@ -2739,7 +2740,7 @@ GetClientSize(hwnd, ByRef w, ByRef h)
 
 
 ; Tjek om der pastes til Maple
-PastingToMaple:
+PastingToMapleOrNot:
 ;WinGetClass, ActiveWindowClass1, A
 ;WinGetActiveTitle, ActiveWindowTitle1
 isMaple:=1
@@ -2755,29 +2756,25 @@ Return
 
 ; Lintalist for Math-specfik paste procedure
 MathPaste:
-; Pasting to Maple - will paste Text 1 by default (and fall back to Text 2)
-If (Text1 = "")
-  Text1:=Text2
 ; Lav udskiftninger fra plugins (vigtigt at det sker inden "Gosub, ProcessText")
-StringReplace, Text1, Text1, `^, {hatchar}, All
-Text1 := RegExReplace(Text1, "iU)\[\[Underline=([^\]]*)\]\]",  "^u$1^u")
-Text1 := RegExReplace(Text1, "iU)\[\[Math=([^\]]*)\]\]",  "^r$1^m")
-Text1 := RegExReplace(Text1, "iU)\[\[Link=([^\]]*)\]\]", "<<<<Link=$1>>>>")
+StringReplace, Clip, Clip, `^, {hatchar}, All
+Clip := RegExReplace(Clip, "iU)\[\[Underline=([^\]]*)\]\]",  "^u$1^u")
+Clip := RegExReplace(Clip, "iU)\[\[Math=([^\]]*)\]\]",  "^r$1^m")
+Clip := RegExReplace(Clip, "iU)\[\[Link=([^\]]*)\]\]", "<<<<Link=$1>>>>")
 ; Foretag udskiftninger af specielle tegn, så send-kommandoen fungerer som forventet
-StringReplace, Text1, Text1, ``, ````, All  ; Do this replacement first to avoid interfering with the others below.
-StringReplace, Text1, Text1, `r`n, ``r, All  ; Using `r works better than `n in MS Word, etc.
-StringReplace, Text1, Text1, `n, ``r, All
-;StringReplace, Text1, Text1, `^, {ASC 0094}, All  ; {ASC 0094}, All ; handled below instead
-StringReplace, Text1, Text1, {right}, {right}, All  ; {ASC 0094}, All
-StringReplace, Text1, Text1, `!, {!}, All
-StringReplace, Text1, Text1, `+, {+}, All
-StringReplace, Text1, Text1, `#, {#}, All
-StringReplace, Text1, Text1, ``r, `^`+j`^m, All
-;~ While(SubStr(Text1, StrLen(Text1)-4) = "^+j^m")
-  ;~ StringTrimRight, Text1, Text1, 5
-;~ MsgBox, %Text1% ; for debugging
+StringReplace, Clip, Clip, ``, ````, All  ; Do this replacement first to avoid interfering with the others below.
+StringReplace, Clip, Clip, `r`n, ``r, All  ; Using `r works better than `n in MS Word, etc.
+StringReplace, Clip, Clip, `n, ``r, All
+;StringReplace, Clip, Clip, `^, {ASC 0094}, All  ; {ASC 0094}, All ; handled below instead
+StringReplace, Clip, Clip, {right}, {right}, All  ; {ASC 0094}, All
+StringReplace, Clip, Clip, `!, {!}, All
+StringReplace, Clip, Clip, `+, {+}, All
+StringReplace, Clip, Clip, `#, {#}, All
+StringReplace, Clip, Clip, ``r, `^`+j`^m, All
+;~ While(SubStr(Clip, StrLen(Clip)-4) = "^+j^m")
+  ;~ StringTrimRight, Clip, Clip, 5
+;~ MsgBox, %Clip% ; for debugging
 Clip0 = %ClipBoardAll% ; store clipboard
-Clip := Text1
 Gosub, ProcessText ; to support all plugins except for rtf, md, image, html, and clipboard with formatting/case change
 ;MsgBox, %Clip% ; for debugging
 If (InStr(Clip, "<<<<Link="))
@@ -2803,7 +2800,6 @@ If (InStr(Clip, "<<<<Link="))
     }
   }
 }
-Clip := Clip
 Gosub, MathSendInput
 ClipBoard = %Clip0% ; restore clipboard
 Text1=
@@ -2843,17 +2839,12 @@ Return
 
 NotMathPaste:
 ; Fjern symboler som kun giver mening i Maple
-StringReplace, Text1, Text1, `^`^, `^, All
-StringReplace, Text1, Text1, `{right`}, , All
-StringReplace, Text1, Text1, %A_Tab%, ``t, All
-StringReplace, Text1, Text1, `;, ```;, All
+StringReplace, Clip, Clip, `^`^, `^, All
+StringReplace, Clip, Clip, `{right`}, , All
+StringReplace, Clip, Clip, %A_Tab%, ``t, All
+StringReplace, Clip, Clip, `;, ```;, All
 
-StringReplace, Text2, Text2, `^`^, `^, All
-StringReplace, Text2, Text2, `{right`}, , All
-StringReplace, Text2, Text2, %A_Tab%, ``t, All
-StringReplace, Text2, Text2, `;, ```;, All
-
-Text1 := RegExReplace(Text1, "iU)\[\[Link=([^\]]*)\]\]", "$1")
+Clip := RegExReplace(Clip, "iU)\[\[Link=([^\]]*)\]\]", "$1")
 Return
 
 
@@ -2888,7 +2879,7 @@ Return
 /**
  * Paste clip if plugin substring present
  * @param {String} Text1 Snippet text
- * @return true if image was pasting, otherwise false 
+ * @return true if image was pasted, otherwise false 
  */
 MathImagePaste(ByRef Text1)
 {
