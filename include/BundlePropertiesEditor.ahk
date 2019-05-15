@@ -56,7 +56,11 @@ Loop, parse, MenuName_HitList, |
 Gui, 81:Add, Text,    x20     y40, Bundles:
 Gui, 81:Add, Listbox, x20     y60 h375 w220 vSelectedListboxBundle gUpdateBundleProperties, %MenuName_HitListClean%
 Gui, 81:Add, Button,  x20    y450 h30  w105 gNewBundle, New Bundle
-Gui, 81:Add, Button,  xp+115 yp   h30  w105 gDeleteBundle, Delete Bundle
+; JJ EDIT BEGIN
+;Gui, 81:Add, Button,  xp+115 yp   h30  w105 gDeleteBundle, Delete Bundle
+Gui, 81:Add, Button,  xp+115 yp   h30  w105 gArchiveBundle, Archive Bundle
+; JJ EDIT END
+
 
 Gui, 81:Add, Button, x260   y450 h30 w130 g81Save, &Save
 Gui, 81:Add, Button, xp+145 y450 h30 w130 g81GuiClose, &Cancel
@@ -66,6 +70,42 @@ Gui, 81:Show, w700 h500, Lintalist bundle editor
 EM_SetCueBanner(hEditName, "Enter name of new bundle")
 WinActivate, Lintalist bundle editor
 Return
+
+
+
+ArchiveBundle:
+Gui, 81:Submit, NoHide
+SelectedListboxBundle:=RegExReplace(SelectedListboxBundle,"iU).*(\d+)$","$1")
+MsgBox, 52, Delete?, % "Do you really want to archive:`n" MenuName_%SelectedListboxBundle% "`n(file: " Filename_%SelectedListboxBundle% ")`n`nLintalist will restart..."
+IfMsgBox, No
+	Return
+Gui, 81:Destroy
+; erase everything before FileMove
+Snippet[SelectedListboxBundle,"Save"] := 0	
+MenuName_%SelectedListboxBundle%:=""
+Description_%SelectedListboxBundle%:=""
+Author_%SelectedListboxBundle%:=""
+TitleMatchList_%SelectedListboxBundle%:=""
+Loop, % Snippet[SelectedListboxBundle].MaxIndex()
+	{
+	 Snippet[Bundle,A_Index,1]:=""
+	 Snippet[Bundle,A_Index,"1v"]:=""
+	 Snippet[Bundle,A_Index,2]:=""
+	 Snippet[Bundle,A_Index,"2v"]:=""
+	 Snippet[Bundle,A_Index,3]:=""
+	 Snippet[Bundle,A_Index,4]:=""
+	 Snippet[Bundle,A_Index,5]:=""
+	}
+BundleArchiveFolder := A_ScriptDir "\bundles\archived bundles\"
+IfNotExist, % BundleArchiveFolder
+  FileCreateDir, % BundleArchiveFolder
+FileMove, % A_ScriptDir "\bundles\" Filename_%SelectedListboxBundle%, % BundleArchiveFolder
+Sleep 500
+Reload
+Return
+
+
+
 
 DeleteBundle:
 Gui, 81:Submit, NoHide
