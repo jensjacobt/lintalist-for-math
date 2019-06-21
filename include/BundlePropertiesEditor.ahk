@@ -61,7 +61,6 @@ Gui, 81:Add, Button,  x20    y450 h30  w105 gNewBundle, New Bundle
 Gui, 81:Add, Button,  xp+115 yp   h30  w105 gArchiveBundle, Archive Bundle
 ; JJ EDIT END
 
-
 Gui, 81:Add, Button, x260   y450 h30 w130 g81Save, &Save
 Gui, 81:Add, Button, xp+145 y450 h30 w130 g81GuiClose, &Cancel
 Gui, 81:Add, Button, xp+145 y450 h30 w130 g81Help, Help
