@@ -253,6 +253,7 @@ If (MathRedTextHotkey <> "")
 If (MathSetUpHotkey <> "")
 	Hotkey, %MathSetUpHotkey%, MathSetUpCommenting
 Hotkey, IfWinActive
+
 ; JJ ADD END
 
 ProgramHotKeyList:=""
@@ -734,22 +735,6 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		}
 	 If (Text1 = "") and (Text2 <> "")   ; if Text1 is empty check if Text2 has content so we can paste that
 		Clip:=Text2
-
-   ; JJ ADD BEGIN
-   If (MathImagePaste(Text1))
-   Return
-
-   Gosub, PastingToMapleOrNot
-   If isMaple
-   {
-     Gosub, MathPaste
-     OmniSearch:=0
-     Typed:=""
-     Return
-   }
-   Else
-   Gosub, NotMathPaste
-   ; JJ ADD END
     
 	 ClipSet("s",1,SendMethod,Clipboard) ; store in clip1
 	 ClearClipboard()
@@ -779,6 +764,28 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 		}
 	 Else
 	 	{
+     ; JJ ADD BEGIN
+     If (MathImagePaste(Text1))
+       Return
+
+     If isMaple()
+     {
+       Gosub, MathPaste
+       OmniSearch:=0
+       Typed:=""
+       Return
+     }
+     Else If isHTMLorRTFCompatible()
+     {
+       pasteHTML_RTF_Text()
+       OmniSearch:=0
+       Typed:=""
+       Return
+     }
+     Else
+       Gosub, NotMathPaste
+     ; JJ ADD END
+     
 		 Gosub, ProcessText
 		 if (formatMD = 1) or (formatHTML = 1)
 			{
@@ -2740,18 +2747,87 @@ GetClientSize(hwnd, ByRef w, ByRef h)
 
 
 ; Tjek om der pastes til Maple
-PastingToMapleOrNot:
-;WinGetClass, ActiveWindowClass1, A
-;WinGetActiveTitle, ActiveWindowTitle1
-isMaple:=1
-IfNotInString, ActiveWindowTitle, - Maple
-  isMaple:=0
-if (ActiveWindowClass <> "SunAwtFrame")
-  isMaple:=0
-IfInString, Text1, [[image= ; don't use Maple handling for images
-  isMaple:=0
-  ; Burde også tjekkes for Text2
-Return
+isMaple()
+{
+  global ActiveWindowTitle, ActiveWindowClass
+  isMaple := true
+  IfNotInString, ActiveWindowTitle, - Maple
+    isMaple := false
+  if (ActiveWindowClass <> "SunAwtFrame")
+    isMaple := false
+  IfInString, Text1, [[image= ; don't use Maple handling for images
+    isMaple := false
+  Return isMaple
+}
+
+
+; Tjek om der pastes til Word, PDF XChangeViewer eller Adobe Acrobat
+isHTMLorRTFCompatible()
+{
+  global ActiveWindowClass, ActiveWindowProcessName
+  isHTMLorRTFCompatible := false
+;  if (ActiveWindowClass = "DSUI:PDFXCViewer") ; PDF-XChangeViewer (only supports TEXT)
+;    isHTMLorRTFCompatible := true
+  if (ActiveWindowClass = "AcrobatSDIWindow") ; Adobe Acrobat
+    isHTMLorRTFCompatible := true
+  if (ActiveWindowProcessName = "WINWORD.EXE") ; Microsoft Word
+    isHTMLorRTFCompatible := true
+  return isHTMLorRTFCompatible
+}
+
+
+pasteHTML_RTF_Text()
+{
+  global
+  WinClip.Snap(Clip0)
+  ;Clip := "æøå is [[Underline=??]] and [[Link=http://dr.dk]] and [[Math=x^t+2{right}+2x]] and [[C=Space|10]]."
+  
+  ; Fjern symboler som kun giver mening i Maple
+  StringReplace, Clip, Clip, `^`^, `^, All
+  ;StringReplace, Clip, Clip, `{right`}, , All
+  StringReplace, Clip, Clip, %A_Tab%, ``t, All
+  StringReplace, Clip, Clip, `;, ```;, All
+  
+  Clip := RegExReplace(Clip, "iU)\[\[Math=(.*)\]\]",  "$1")
+  Clip := RegExReplace(Clip, "iU)\^(.*){right}",  "^($1)")
+  StringReplace, Clip, Clip, `{right`}, , All
+  
+  ClipHTML := SubStr(Clip, 1)
+  ClipHTML := RegExReplace(ClipHTML, "iU)\[\[Link=(.*)\]\]", "<a href=""$1"">$1</a>")
+  ClipHTML := RegExReplace(ClipHTML, "iU)\[\[Underline=(.*)\]\]",  "<u>$1</u>")
+  StringReplace, ClipHTML, ClipHTML, `n, <br>, All
+  
+  ClipRTF := SubStr(Clip, 1)
+  ClipRTF := RegExReplace(ClipRTF, "iU)\[\[Link=(.*)\]\]", "{{\field{\*\fldinst{HYPERLINK $1 }}{\fldrslt{$1\ul0\cf0}}}}")
+  ClipRTF := RegExReplace(ClipRTF, "iU)\[\[Underline=(.*)\]\]",  "\ul $1\ulnone ")
+  StringReplace, ClipHTML, ClipHTML, `r, , All
+  StringReplace, ClipHTML, ClipHTML, `n, `\line` , All
+  ClipRTF := "{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1030{\colortbl \;\red0\green0\blue255\;}" . ClipRTF . "}"
+  
+  ClipTEXT := SubStr(Clip, 1)
+  ClipTEXT := RegExReplace(ClipTEXT, "iU)\[\[Link=(.*)\]\]", "$1")
+  ClipTEXT := RegExReplace(ClipTEXT, "iU)\[\[Underline=(.*)\]\]",  "$1")  
+  
+  processClipText(ClipHTML)
+  processClipText(ClipRTF)
+  processClipText(ClipTEXT)
+  
+  WinClip.SetHTML(ClipHTML)
+  WinClip.SetRTF(ClipRTF)
+  WinClip.SetText(ClipTEXT)
+  Sleep, 150
+  Send, ^v
+  Sleep, 150
+  WinClip.Restore(Clip0)
+}
+
+processClipText(ByRef SpecialClip)
+{
+  global
+  Clip := SpecialClip
+  Gosub, ProcessText
+  SpecialClip := SubStr(Clip, 1)
+}
 
 
 ; Lintalist for Math-specfik paste procedure
@@ -2873,8 +2949,6 @@ else
 }
 Sleep, 150
 Return
-
-
 
 /**
  * Paste clip if plugin substring present
