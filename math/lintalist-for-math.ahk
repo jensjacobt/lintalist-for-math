@@ -9,56 +9,6 @@ Return
 
 
 
-MathHelperHotkeys:
-; Set up snippet helper hotkeys
-If (MathSnippetHelperHotkey <> "")
-  Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
-If (MathSnippetHelperHotkey <> "")
-  Hotkey, %MathImageHelperHotkey%, MathImageHelperStart
-Return
-
-
-
-
-MathOtherHotkeys:
-; Setup general hotkeys
-If (MathReloadAllHotkey <> "")
-	Hotkey, %MathReloadAllHotkey%, MathReloadAllBundles
-If (MathPastePureHotkey <> "")
-	Hotkey, %MathPastePureHotkey%, MathPastePureText
-
-; Setup Maple hotkeys
-Hotkey, IfWinActive, - Maple ahk_class SunAwtFrame
-If (MathYellowBGHotkey <> "")
-	Hotkey, %MathYellowBGHotkey%, MathSetTextBackgroundColor
-If (MathOrangeTextHotkey <> "")
-	Hotkey, %MathOrangeTextHotkey%, MathSetTextColorToOrange
-If (MathRedTextHotkey <> "")
-	Hotkey, %MathRedTextHotkey%, MathSetTextColorToRed
-If (MathSetUpHotkey <> "")
-	Hotkey, %MathSetUpHotkey%, MathSetUpCommenting
-Hotkey, IfWinActive
-Return
-
-
-
-
-
-MathHandleDeleteKey()
-{
-  ControlGetFocus, ControlInFocus
-  If(ControlInFocus = "Edit1")
-  {
-    Send, {Delete}
-    return true
-  }
-  return false
-}
-
-
-
-
-
 
 
 #IfWinActive, Lintalist snippet editor ahk_class AutoHotkeyGUI
@@ -95,81 +45,50 @@ InsertPluginPlaceholderOrWrapSelectedText(NameOfThisPluginForPasting, KeyOfThisP
 
 
 
+MathHandleDeleteKey()
+{
+  ControlGetFocus, ControlInFocus
+  If(ControlInFocus = "Edit1")
+  {
+    Send, {Delete}
+    return true
+  }
+  return false
+}
 
 
-
-; Indsæt udklipsholderen som ren tekst (hvilket afhjælper noget formateringsbøvl i Maple)
-MathPastePureText:
-Clip0 = %ClipBoardAll%
-ClipBoard = %ClipBoard%
-SendInput ^v
-Sleep 150                      ; Don't change clipboard while it is pasted! (Sleep > 0)
-ClipBoard = %Clip0%
-VarSetCapacity(Clip0, 0)
+MathHelperHotkeys:
+; Set up snippet helper hotkeys
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathSnippetHelperHotkey%, MathSnippetHelperStart
+If (MathSnippetHelperHotkey <> "")
+  Hotkey, %MathImageHelperHotkey%, MathImageHelperStart
 Return
 
 
 
 
+MathOtherHotkeys:
+; Setup general hotkeys
+If (MathReloadAllHotkey <> "")
+	Hotkey, %MathReloadAllHotkey%, MathReloadAllBundles
+If (MathPastePureHotkey <> "")
+	Hotkey, %MathPastePureHotkey%, MathPastePureText
 
-; Genindlæs Lintalist med alle bundles indlæst
-MathReloadAllBundles:
-If (LoadAll = 0)
-		{
-		 LoadAll=1
-		 Menu, tray, Check, &Load All Bundles
-		 Try
-			{
-			 Menu, file, Check, &Load All Bundles
-			}
-		 Catch
-			{
-			 ;
-			}
-		}
-	 Lock = 0
-	 GuiControl, 1: ,Lock, 0
-		LoadBundle()
-	 UpdateLVColWidth()
-	 Gosub, SetStatusBar
-	 ShowPreview(PreviewSection)
-	 Loop, parse, MenuName_HitList, |
-		{
-		 StringSplit, MenuText, A_LoopField, % Chr(5) ; %
-		 Menu, file, UnCheck, &%MenuText1%
-		}
-Reload
+; Setup Maple hotkeys
+Hotkey, IfWinActive, - Maple ahk_class SunAwtFrame
+If (MathYellowBGHotkey <> "")
+	Hotkey, %MathYellowBGHotkey%, MathSetTextBackgroundColor
+If (MathOrangeTextHotkey <> "")
+	Hotkey, %MathOrangeTextHotkey%, MathSetTextColorToOrange
+If (MathRedTextHotkey <> "")
+	Hotkey, %MathRedTextHotkey%, MathSetTextColorToRed
+If (MathSetUpHotkey <> "")
+	Hotkey, %MathSetUpHotkey%, MathSetUpCommenting
+Hotkey, IfWinActive
 Return
 
 
-
-
-
-; Giv tekstmarkeringen gul baggrundsfarve i Maple
-MathSetTextBackgroundColor:
-SendEvent !r{Right}h
-WinWaitActive, Select a Color, , 3
-SendEvent {TAB 26}{Space}
-SendEvent {ALT DOWN}o{ALT UP}
-Return
-
-
-; Giv tekstmarkeringen halvgennemsigtig orange farve i Maple
-MathSetTextColorToOrange:
-SendEvent !r{Right}c
-WinWaitActive, Select a Color, , 3
-SendEvent {TAB 33}{Space}
-SendEvent {ALT DOWN}o{ALT UP}
-Return
-
-
-; Giv tekstmarkeringen en rød farve i Maple
-MathSetTextColorToRed:
-SendEvent, !r{Right}c
-WinWaitActive, Select a Color, , 3
-SendEvent, {TAB 16}{Space}
-SendEvent, {ALT DOWN}o{ALT UP}
-Return
 
 
 ; Kopier markeret tekst og guide i tilblivelsen af ny hotstring
@@ -212,8 +131,6 @@ MathHelperSnippet := "[[MathClip=" . MathImageHelperUUID . "]]"
 GoSub, EditF7
 Return
 
-
-
 CreateUUID()
 {
     VarSetCapacity(puuid, 16, 0)
@@ -223,6 +140,83 @@ CreateUUID()
     return ""
 }
 
+
+
+
+
+; Genindlæs Lintalist med alle bundles indlæst
+MathReloadAllBundles:
+If (LoadAll = 0)
+		{
+		 LoadAll=1
+		 Menu, tray, Check, &Load All Bundles
+		 Try
+			{
+			 Menu, file, Check, &Load All Bundles
+			}
+		 Catch
+			{
+			 ;
+			}
+		}
+	 Lock = 0
+	 GuiControl, 1: ,Lock, 0
+		LoadBundle()
+	 UpdateLVColWidth()
+	 Gosub, SetStatusBar
+	 ShowPreview(PreviewSection)
+	 Loop, parse, MenuName_HitList, |
+		{
+		 StringSplit, MenuText, A_LoopField, % Chr(5) ; %
+		 Menu, file, UnCheck, &%MenuText1%
+		}
+Reload
+Return
+
+
+
+
+
+; Indsæt udklipsholderen som ren tekst (hvilket afhjælper noget formateringsbøvl i Maple)
+MathPastePureText:
+Clip0 = %ClipBoardAll%
+ClipBoard = %ClipBoard%
+SendInput ^v
+Sleep 150                      ; Don't change clipboard while it is pasted! (Sleep > 0)
+ClipBoard = %Clip0%
+VarSetCapacity(Clip0, 0)
+Return
+
+
+
+
+
+
+; Giv tekstmarkeringen gul baggrundsfarve i Maple
+MathSetTextBackgroundColor:
+SendEvent !r{Right}h
+WinWaitActive, Select a Color, , 3
+SendEvent {TAB 26}{Space}
+SendEvent {ALT DOWN}o{ALT UP}
+Return
+
+
+; Giv tekstmarkeringen halvgennemsigtig orange farve i Maple
+MathSetTextColorToOrange:
+SendEvent !r{Right}c
+WinWaitActive, Select a Color, , 3
+SendEvent {TAB 33}{Space}
+SendEvent {ALT DOWN}o{ALT UP}
+Return
+
+
+; Giv tekstmarkeringen en rød farve i Maple
+MathSetTextColorToRed:
+SendEvent, !r{Right}c
+WinWaitActive, Select a Color, , 3
+SendEvent, {TAB 16}{Space}
+SendEvent, {ALT DOWN}o{ALT UP}
+Return
 
 
 ; Giv Maple Input rød farve, zoom til 100 % og udfold alle sektioner.
@@ -248,7 +242,6 @@ Sleep, 150
 SendEvent, {ALT DOWN}vie{ALT UP}{CTRL DOWN}2{CTRL UP}
 Return	
 
-
 ; Få bredde (w) og højde (h) af det givne vindue (hwnd)
 GetClientSize(hwnd, ByRef w, ByRef h)
 {
@@ -257,6 +250,10 @@ GetClientSize(hwnd, ByRef w, ByRef h)
   w := NumGet(rc, 8, "int")
   h := NumGet(rc, 12, "int")
 }
+
+
+
+
 
 
 isMathPaste()
@@ -502,6 +499,9 @@ else
 }
 Sleep, 150
 Return
+
+
+
 
 /**
  * Paste clip if plugin substring present
