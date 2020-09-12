@@ -61,44 +61,36 @@ MathHandleDeleteKey()
 
 
 
-; ctrl+u: Tilføj understregning til markering, når der redigeres i Lintalist snippet editor.
 #IfWinActive, Lintalist snippet editor ahk_class AutoHotkeyGUI
-^u::
-NameOfThisPluginForPasting = Underline
-KeyOfThisPluginForPasting = u
-GoSub, InsertPluginPlaceholderOrWrapSelectedText
-NameOfThisPluginForPasting =
-KeyOfThisPluginForPasting =
-Return
+; ctrl+u: Tilføj understregning til markering, når der redigeres i Lintalist snippet editor.
+^u::InsertPluginPlaceholderOrWrapSelectedText("Underline", "u")
 
 ; ctrl+l: Tilføj link-tag til markering, når der redigeres i Lintalist snippet editor.
-^l::
-NameOfThisPluginForPasting = Link
-KeyOfThisPluginForPasting = l
-GoSub, InsertPluginPlaceholderOrWrapSelectedText
-NameOfThisPluginForPasting =
-KeyOfThisPluginForPasting =
-Return
+^l::InsertPluginPlaceholderOrWrapSelectedText("Link", "l")
+#IfWinActive
 
-InsertPluginPlaceholderOrWrapSelectedText:
-ControlGetFocus, ComponentCurrentlyWithFocus
-If Not (ComponentCurrentlyWithFocus = "Edit2")
+InsertPluginPlaceholderOrWrapSelectedText(NameOfThisPluginForPasting, KeyOfThisPluginForPasting) 
 {
-  Send, ^%KeyOfThisPluginForPasting%
+  ControlGetFocus, ComponentCurrentlyWithFocus
+  If Not (ComponentCurrentlyWithFocus = "Edit2")
+  {
+    Send, ^%KeyOfThisPluginForPasting%
+    Return
+  }
+  ClipSaved := ClipboardAll
+  Clipboard:=""
+  Send, ^c
+  Sleep 150
+  Clipboard = [[%NameOfThisPluginForPasting%=%Clipboard%]]
+  Send, ^v
+  Sleep, 150
+  Send, {LEFT}{LEFT}
+  Clipboard := ClipSaved
+  ClipSaved =
   Return
 }
-ClipSaved := ClipboardAll
-Clipboard:=""
-Send, ^c
-Sleep 150
-Clipboard = [[%NameOfThisPluginForPasting%=%Clipboard%]]
-Send, ^v
-Sleep, 150
-Send, {LEFT}{LEFT}
-Clipboard := ClipSaved
-ClipSaved =
-Return
-#IfWinActive
+
+
 
 
 
