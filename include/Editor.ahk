@@ -292,8 +292,8 @@ Else if (MathHelperSnippet != "")
 {
 	If !EditorHotkeySyntax
 		ControlFocus, Edit1, Lintalist snippet editor
-  Else
-		ControlFocus, Edit2, Lintalist snippet editor
+    Else
+		ControlFocus, Edit2, Lintalist snippet editor ; Focus Shorthand
 	MathHelperSnippet := ""
 }
 ; JJ ADD END
@@ -491,14 +491,14 @@ Else If (EditMode = "AppendSnippet") or (EditMode = "CopySnippet") or (EditMode 
 	Else
 		{	
 		 FileAppend, %Append%, %file%, UTF-8
-		 ; JJ EDIT BEGIN
-		 If (ErrorLevel <> 0)
-		 	MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
-		 ;~ If (ErrorLevel = 0)
-			;~ MsgBox, 64, Snippet succesfully added to bundle, % File "`n" Append
-		 ;~ Else
-		 	;~ MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
-		 ; JJ EDIT END
+		; JJ EDIT BEGIN
+		If (ErrorLevel <> 0)
+			MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
+		; If (ErrorLevel = 0)
+		; 	MsgBox, 64, Snippet succesfully added to bundle, % File "`n" Append
+		; Else
+		; 	MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
+		; JJ EDIT END
 		} 
 		Counter:=AppendToBundle
 	}

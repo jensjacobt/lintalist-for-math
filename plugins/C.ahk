@@ -23,23 +23,12 @@ Loop ; get user input with optional default response
 	 If (PluginSnippetCChar = "space") or (PluginSnippetCChar = "\s")
 		PluginSnippetCChar:=" "
 	 Else If (PluginSnippetCChar = "tab") or (PluginSnippetCChar = "\t")
-	 ; JJ EDIT START
-	  {
-			If isMaple
-				PluginSnippetCChar:="    "
-			Else
-				PluginSnippetCChar:=A_Tab
-		}
-	 ; JJ EDIT END
+		PluginSnippetCChar:=A_Tab
 	 Else If (PluginSnippetCChar = "enter") or (PluginSnippetCChar = "\n")
-	 ; JJ EDIT START
-	  {
-			If isMaple
-				PluginSnippetCChar:="^+j^m"
-			Else
-				PluginSnippetCChar:=Chr(13)
-		}
-	 ; JJ EDIT END
+	    ; JJ EDIT BEGIN
+		; PluginSnippetCChar:=Chr(13)
+		PluginSnippetCChar:="`r`n"
+		; JJ EDIT END
 	 Loop, % PluginSnippetCRepeat
 		PluginSnippetCString .= PluginSnippetCChar
 	 StringReplace, clip, clip, %PluginText%, %PluginSnippetCString%, All
