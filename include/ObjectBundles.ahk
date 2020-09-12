@@ -363,6 +363,7 @@ ParseBundle(Patterns, Counter)
 
 CreateFirstBundle()
 	{
+; JJ EDIT BEGIN
 Global IniFile		
 FileAppend, 
 (
@@ -374,7 +375,7 @@ TitleMatch:
 Patterns:
 - LLPart1: This is an example of a mathematical expression [[Math=x^t+2{right}+2x]], here are some new lines,
 
-and a bit of [[Underline=underlined text]] as well as a link to [[Link=http://dr.dk]] (when pasted to Maple!).
+and a bit of [[Underline=underlined text]] as well as a link to [[Link=http://dr.dk]] (when pasted to Maple or Word!).
 
 Lintalist for Math builds on Lintalist.
 Documentation for Lintalist:
@@ -386,6 +387,7 @@ Dokumentation til Lintalist for Math (brief):
   LLShorthand: linexample
   LLScript: 
 ), %A_ScriptDir%\bundles\default.txt, UTF-8
+; JJ EDIT END
 DefaultBundle:="default.txt"
 IniWrite, default.txt, %A_ScriptDir%\%IniFile%, Settings, AlwaysLoadBundles
 IniWrite, default.txt, %A_ScriptDir%\%IniFile%, Settings, DefaultBundle
