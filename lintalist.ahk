@@ -765,25 +765,8 @@ If (Script = "") or (ScriptPaused = 1) ; script is empty so we need to paste Tex
 	 Else
 	 	{
      ; JJ ADD BEGIN
-     If (MathImagePaste(Text1))
+     if (isMathPaste())
        Return
-
-     If isMaple()
-     {
-       Gosub, MathPaste
-       OmniSearch:=0
-       Typed:=""
-       Return
-     }
-     Else If isHTMLorRTFCompatible()
-     {
-       pasteHTML_RTF_Text()
-       OmniSearch:=0
-       Typed:=""
-       Return
-     }
-     Else
-       Gosub, NotMathPaste
      ; JJ ADD END
      
 		 Gosub, ProcessText
@@ -2746,6 +2729,33 @@ GetClientSize(hwnd, ByRef w, ByRef h)
 }
 
 
+isMathPaste()
+{
+  if (MathImagePaste(Text1))
+    return false
+
+  if isMaple()
+  {
+    Gosub, MathPaste
+    OmniSearch:=0
+    Typed:=""
+    return true
+  }
+  else If isHTMLorRTFCompatible()
+  {
+    pasteHTML_RTF_Text()
+    OmniSearch:=0
+    Typed:=""
+    return true
+  }
+  else
+    Gosub, NotMathPaste
+  return false
+}
+
+
+
+
 ; Tjek om der pastes til Maple
 isMaple()
 {
@@ -2766,11 +2776,15 @@ isHTMLorRTFCompatible()
 {
   global ActiveWindowClass, ActiveWindowProcessName
   isHTMLorRTFCompatible := false
-;  if (ActiveWindowClass = "DSUI:PDFXCViewer") ; PDF-XChangeViewer (only supports TEXT)
-;    isHTMLorRTFCompatible := true
-  if (ActiveWindowClass = "AcrobatSDIWindow") ; Adobe Acrobat
+  if (ActiveWindowProcessName = "PDFXEdit.exe") ; PDF-XChange Editor (only support RTF and TEXT - no links)
+	  isHTMLorRTFCompatible := true
+  ; else if (ActiveWindowClass = "DSUI:PDFXCViewer") ; PDF-XChange Viewer (only supports TEXT)
+  ;  isHTMLorRTFCompatible := true
+  else if (ActiveWindowClass = "AcrobatSDIWindow") ; Adobe Acrobat (no links)
     isHTMLorRTFCompatible := true
-  if (ActiveWindowProcessName = "WINWORD.EXE") ; Microsoft Word
+  else if (ActiveWindowProcessName = "WINWORD.EXE") ; Microsoft Word
+    isHTMLorRTFCompatible := true
+  else if (ActiveWindowClass = "WordPadClass") ; WordPad
     isHTMLorRTFCompatible := true
   return isHTMLorRTFCompatible
 }
@@ -2778,13 +2792,13 @@ isHTMLorRTFCompatible()
 
 pasteHTML_RTF_Text()
 {
-  global
+  global WinClip, Clip
   WinClip.Snap(Clip0)
   ;Clip := "æøå is [[Underline=??]] and [[Link=http://dr.dk]] and [[Math=x^t+2{right}+2x]] and [[C=Space|10]]."
   
   ; Fjern symboler som kun giver mening i Maple
   StringReplace, Clip, Clip, `^`^, `^, All
-  ;StringReplace, Clip, Clip, `{right`}, , All
+  ;StringReplace, Clip, Clip, `{right`}, , All   ; handled below
   StringReplace, Clip, Clip, %A_Tab%, ``t, All
   StringReplace, Clip, Clip, `;, ```;, All
   
@@ -2796,13 +2810,14 @@ pasteHTML_RTF_Text()
   ClipHTML := RegExReplace(ClipHTML, "iU)\[\[Link=(.*)\]\]", "<a href=""$1"">$1</a>")
   ClipHTML := RegExReplace(ClipHTML, "iU)\[\[Underline=(.*)\]\]",  "<u>$1</u>")
   StringReplace, ClipHTML, ClipHTML, `n, <br>, All
+  ClipHTML := "<span style=""color:red"">" . ClipHTML . "</span>"
   
   ClipRTF := SubStr(Clip, 1)
   ClipRTF := RegExReplace(ClipRTF, "iU)\[\[Link=(.*)\]\]", "{{\field{\*\fldinst{HYPERLINK $1 }}{\fldrslt{$1\ul0\cf0}}}}")
   ClipRTF := RegExReplace(ClipRTF, "iU)\[\[Underline=(.*)\]\]",  "\ul $1\ulnone ")
-  StringReplace, ClipHTML, ClipHTML, `r, , All
-  StringReplace, ClipHTML, ClipHTML, `n, `\line` , All
-  ClipRTF := "{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1030{\colortbl \;\red0\green0\blue255\;}" . ClipRTF . "}"
+  StringReplace, ClipRTF, ClipRTF, `r, , All
+  StringReplace, ClipRTF, ClipRTF, `n, \line` , All
+  ClipRTF := "{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1030{\colortbl;\red255\green0\blue0\;}\cf1 " . ClipRTF . "}"
   
   ClipTEXT := SubStr(Clip, 1)
   ClipTEXT := RegExReplace(ClipTEXT, "iU)\[\[Link=(.*)\]\]", "$1")
@@ -2813,8 +2828,9 @@ pasteHTML_RTF_Text()
   processClipText(ClipTEXT)
   
   WinClip.SetHTML(ClipHTML)
-  WinClip.SetRTF(ClipRTF)
   WinClip.SetText(ClipTEXT)
+  WinClip.SetRTF(ClipRTF)
+  
   Sleep, 150
   Send, ^v
   Sleep, 150
@@ -2916,9 +2932,12 @@ Return
 NotMathPaste:
 ; Fjern symboler som kun giver mening i Maple
 StringReplace, Clip, Clip, `^`^, `^, All
-StringReplace, Clip, Clip, `{right`}, , All
 StringReplace, Clip, Clip, %A_Tab%, ``t, All
 StringReplace, Clip, Clip, `;, ```;, All
+
+Clip := RegExReplace(Clip, "iU)\[\[Math=(.*)\]\]",  "$1")
+Clip := RegExReplace(Clip, "iU)\^(.*){right}",  "^($1)")
+StringReplace, Clip, Clip, `{right`}, , All
 
 Clip := RegExReplace(Clip, "iU)\[\[Link=([^\]]*)\]\]", "$1")
 Return
