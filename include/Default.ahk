@@ -1,7 +1,6 @@
 ﻿/*
 Name          : Standard functions, can also be shared by bundle scripts by including LLInit() in your bundle script
-Version       : 1.1
-Date          : 20170616
+Version       : 1.2
 Functions     :
 	- LLInit()
 	- GetActiveWindowStats()
@@ -9,6 +8,9 @@ Functions     :
 	- ClipSet() mod of virclip by Learning one http://www.autohotkey.com/forum/topic56926.html
 
 History:
+1.2 - ShortcutCopy, ShortcutPaste, ShortcutCut available in Scripts as well.
+    - optional includes nvda.ahk and afterpaste.ahk (see docs, used for nvda for now)
+    - moved Sleep, % PasteDelay to after pasting (replacing sleep, 50)
 1.1 PasteDelay, ActiveWindowID, ActiveControl now global as they should in SendKey()
 1.0 Initial version 20101010
 
@@ -27,7 +29,7 @@ GetActiveWindowStats() ; Get Active Window & Control
 	 
 	 ; we can use this in our bundles to make sure we have 
 	 ; the default functions available to our scripts defined in the bundle
-	 
+
 	 LLInit= ; pass on basic data + functions to script from snippet
 	 (
 	  
@@ -37,7 +39,13 @@ GetActiveWindowStats() ; Get Active Window & Control
 		ActiveWindowTitle=%ActiveWindowTitle%
 		PasteDelay=%PasteDelay%
 		SendMethod=%SendMethod%
+		ShortcutCopy=%ShortcutCopy%
+		ShortcutPaste=%ShortcutPaste%
+		ShortcutCut=%ShortcutCut%
+
 		#include %A_ScriptDir%\include\default.ahk  	  
+
+		#include *i %A_ScriptDir%\include\nvda.ahk
 	  
 	 )
 	}
@@ -55,9 +63,33 @@ SendKey(Method = 1, Keys = "")
 	 ; Method: 3 = SendPlay
 	 ; Method: 4 = ControlSend
  
- global PasteDelay, ActiveWindowID, ActiveControl
- Sleep, % PasteDelay
+ global PasteDelay, ActiveWindowID, ActiveControl, ActiveWindowProcessName, AltPaste, ShortcutCopy, ShortcutPaste, ShortcutCut, ShortcutQuickSearch
  
+; replace default keys with application specific keys defined in AltPaste.ini - see docs\AltPaste.md
+ If ActiveWindowProcessName in % AltPaste.programs
+	{
+	 if (keys = ShortcutPaste)
+		{
+		 if AltPaste[ActiveWindowProcessName].HasKey("paste")
+		 	keys:=AltPaste[ActiveWindowProcessName].paste
+		}
+	 else if (keys = ShortcutCopy)
+		{
+		 if AltPaste[ActiveWindowProcessName].HasKey("copy")
+			keys:=AltPaste[ActiveWindowProcessName].copy
+		}
+	 else if (keys = ShortcutCut)
+		{
+		 if AltPaste[ActiveWindowProcessName].HasKey("cut")
+			keys:=AltPaste[ActiveWindowProcessName].cut
+		}
+	 else if (keys = ShortcutQuickSearch)
+		{
+		 if AltPaste[ActiveWindowProcessName].HasKey("QuickSearch")
+			keys:=AltPaste[ActiveWindowProcessName].QuickSearch
+		}
+	}
+
 ;	 If ((Save = 1) or (Save = ""))
 ;		ClipSet("s",1) ; safe current content and clear clipboard
 ;		ClearClipboard()
@@ -83,8 +115,13 @@ SendKey(Method = 1, Keys = "")
 		 ControlSend, %ActiveControl%, %keys%, ahk_id %ActiveWindowID%
 		}
 
-	 Sleep 50 ; some time to get data to clipboard
-	 
+;	 Sleep 50 ; some time to get data to clipboard
+	 Sleep, % PasteDelay ; was at the start of the function, moved it here
+
+     ; Because one of the includes below will always fail code is only loaded once:
+	 #include *i %A_ScriptDir%\include\afterpaste.ahk     ; from lintastlist search
+	 #include *i %A_ScriptDir%\..\include\afterpaste.ahk  ; from a script
+
 ;	 If (Restore = 1)
 ;		 Clipboard:=ClipSet("g",2) ; restore
 	
@@ -103,6 +140,7 @@ SendKey(Method = 1, Keys = "")
 "e" or "Empty"
 "ea" or "EmptyAll"
 "g" or "Get"
+"ge" or "GetAndEmpty"      ; Lintalist addition
 "s" or "Set"
 "a" or "Append"
 "p" or "Prepend"
@@ -116,6 +154,7 @@ SendKey(Method = 1, Keys = "")
 
 ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autohotkey.com/forum/topic56926.html
   { 
+   global ShortcutCopy, ShortcutPaste, ShortcutCut
    Static Clip1, Clip2, Clip3, Clip4
    if ClipNum not between 1 and 30
    Return
@@ -130,9 +169,9 @@ ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autoh
          Sleep, 10
       }
       if (task = "c" or task = "ca" or task = "Copy" or task = "CopyAll")
-      	SendKey(SendMethod, "^c")
+      	SendKey(SendMethod, ShortcutCopy)
       Else
-      	SendKey(SendMethod, "^x")
+      	SendKey(SendMethod, ShortcutCut)
       if (task = "c" or task = "x" or task = "Copy" or task = "Cut") {
          ClipWait, 0.5
          if !(Clipboard = "")
@@ -164,7 +203,7 @@ ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autoh
          ClipWait, 0.5
          Sleep, 30
       }
-      	SendKey(SendMethod, "^v")
+      	SendKey(SendMethod, ShortcutPaste)
       Sleep, 20
       While !(Clipboard = "") {
          Clipboard =
@@ -185,7 +224,12 @@ ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autoh
       Return
    }
    else if (task = "g" or task = "Get")
-   Return Clip%ClipNum%
+      Return Clip%ClipNum%
+   else if (task = "ge" or task = "GetAndEmpty") {
+   	ThisClip:=Clip%ClipNum%
+   	Clip%ClipNum% =
+    Return ThisClip
+   }
    else if (task = "s" or task = "Set") {
       Clip%ClipNum% := Value
       Return Clip%ClipNum%
@@ -204,7 +248,7 @@ ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autoh
          Clipboard =
          Sleep, 10
       }
-      SendKey(SendMethod, "^c")
+      SendKey(SendMethod, ShortcutCopy)
       ClipWait, 0.5
       if !(Clipboard = "") {
          if (Clip%ClipNum% = "")
@@ -241,19 +285,19 @@ ClipSet(Task,ClipNum=1,SendMethod=1,Value="") ; by Learning one http://www.autoh
 
 ClearClipboard()
 	{
-	   While !(Clipboard = "")
-	    {
-	     Clipboard =
-	     Sleep, 10
-	    }
-	   Return
+	 While !(Clipboard = "")
+		{
+		 Clipboard =
+		 Sleep, 10
+		}
+	 Return
 	}
 	
 TryClipboard()
 	{
 	 Try
-	 	v:=Clipboard
+		v:=Clipboard
 	 catch ; can't read/access clipboard to return false
-	 	Return 0
+		Return 0
 	 Return 1
 	}

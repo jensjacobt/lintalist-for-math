@@ -1,24 +1,31 @@
-﻿; LintaList [standalone script]
-; Purpose: Update script for Lintalist
-; Version: 1.5
-; Date:    20150329
+﻿/*
 
-; ChangeButtonNames
-; http://ahkscript.org/docs/scripts/MsgBoxButtonNames.htm	  
+LintaList [standalone script]
+Purpose: Update script for Lintalist
 
-; CopyFilesAndFolders (AHK Docs)
-; http://ahkscript.org/docs/commands/FileCopy.htm
+References/credits:
 
-; AutoHotkey wrapper for Windows native Zip feature by Coco
-; http://ahkscript.org/boards/viewtopic.php?f=6&t=3892
-; https://github.com/cocobelgica/AutoHotkey-ZipFile
+ChangeButtonNames
+http://ahkscript.org/docs/scripts/MsgBoxButtonNames.htm	  
 
-; VersionCompare by boiler 
-; http://ahkscript.org/boards/viewtopic.php?f=6&t=5959
+CopyFilesAndFolders (AHK Docs)
+http://ahkscript.org/docs/commands/FileCopy.htm
 
-; JJ EDIT BEGIN
+AutoHotkey wrapper for Windows native Zip feature by Coco
+http://ahkscript.org/boards/viewtopic.php?f=6&t=3892
+https://github.com/cocobelgica/AutoHotkey-ZipFile
+
+VersionCompare by boiler 
+http://ahkscript.org/boards/viewtopic.php?f=6&t=5959
+
+v1.6 - Use 7-zip console version as backup to bypass 
+       "Compressed (zipped) Folders Error" - see docs\Update.md
+
+*/
+
+; MATH EDIT BEGIN
 ; All URLs and names updated for Lintalist for Math.
-; JJ EDIT END
+; MATH EDIT END
 
 DetectHiddenWindows, On
 SetTitleMatchMode, 2
@@ -41,7 +48,7 @@ FileDelete, %UnpackFolder%\checkupdate.ini
 FileDelete, %UnpackFolder%\update.zip
 
 URLDownloadToFile, https://raw.githubusercontent.com/jensjacobt/lintalist-for-math/master/version.ini, %UnpackFolder%\checkupdate.ini
-                   
+
 IniRead, currentversion, %LintalistFolder%\version.ini, settings, version
 If (currentversion = "ERROR")
 	{
@@ -89,26 +96,56 @@ If (ErrorLevel = 1 )
 FileRemoveDir, %UnpackFolder%\lintalist-for-math-master, 1
 
 BackupZip:=UnpackFolder "\Backup-" A_Now ".zip"
-backup := new ZipFile(BackupZip)
 
-backup.pack("bundles")
-backup.pack("docs")
-backup.pack("Extras")
-backup.pack("icons")
-backup.pack("include")
-backup.pack("local")
-backup.pack("plugins")
-backup.pack("changelog.md")
-backup.pack("Settings.ini")
-backup.pack("lintalist.ahk")
-backup.pack("version.ini")
-backup.pack("readme.md")
+If FileExist(A_ScriptDir "\7za.exe")
+	7zip:=1
 
-zip := new ZipFile(UnpackFolder "\update.zip")
-zip.unpack(, UnpackFolder)
+MsgBox, 36, Lintalist, Do you want to prepare a backup of the current version and your bundles in:`n`n%BackupZip%`n`nSee docs\Update.md if you receive an error message during the backup process.
+
+IfMsgBox, Yes ; prepare backup
+	{
+
+	 If 7zip
+	 	{
+		 RunWait %ComSpec% /c ""%A_ScriptDir%\7za.exe" "u" "tmpscrpts\BackupZip-%A_Now%.zip" "*" "-x!tmpscrpts""
+		}
+	 else ; native zip functions using class zipfile
+		{
+
+		 backup := new ZipFile(BackupZip)
+
+		 backup.pack("bundles")
+		 backup.pack("docs")
+		 backup.pack("Extras")
+		 backup.pack("icons")
+		 backup.pack("include")
+		 backup.pack("local")
+		 backup.pack("plugins")
+		 backup.pack("themes")
+		 backup.pack("changelog.md")
+		 backup.pack("Settings.ini")
+		 backup.pack("AltPaste.ini")
+		 backup.pack("LineFeed.ini")
+		 backup.pack("multicaret.ini")
+		 backup.pack("lintalist.ahk")
+		 backup.pack("version.ini")
+		 backup.pack("readme.md")
+
+		}
+	}
+
+; unpack downloaded update 
+
+If 7zip
+	 RunWait %ComSpec% /c ""%A_ScriptDir%\7za.exe" "x" "tmpscrpts\update.zip" "-otmpscrpts""
+else
+	{
+	 zip := new ZipFile(UnpackFolder "\update.zip")
+	 zip.unpack(, UnpackFolder)
+	}
 
 WinClose, %LintalistFolder%\lintalist.ahk
-Sleep, 1000 
+Sleep, 1500 
 
 ; From the AHK docs:
 ; The following copies all files and folders inside a folder to a different folder:
@@ -138,19 +175,19 @@ ExitApp
 ; Not limited to 4 sections.  Can handle 5.3.2.1.6.19.6 (and so on) if needed.
 ; Returns 1 if version1 is more recent, 2 if version 2 is more recent, 0 if they are the same.
 ; http://ahkscript.org/boards/viewtopic.php?f=6&t=5959
-; JJ ADD BEGIN
+; MATH ADD BEGIN
 ; This has been extended to include a letter at the end of the string. 
 ; That letter states the version of Lintalist for Math built on the given version number of Lintalist.
 ; E.g. version 1.9.1c would be the third (c) version built of Lintalist 1.9.1.
-; JJ ADD END
+; MATH ADD END
 VersionCompare(version1, version2)
 	{
-	 ; JJ ADD BEGIN
+	 ; MATH ADD BEGIN
 	 StringRight, letter1, version1, 1
 	 StringRight, letter2, version2, 1
 	 StringTrimRight, version1, version1, 1
 	 StringTrimRight, version2, version2, 1
-	 ; JJ ADD END
+	 ; MATH ADD END
 	 StringSplit, verA, version1, .
 	 StringSplit, verB, version2, .
 	 Loop, % (verA0> verB0 ? verA0 : verB0)
@@ -164,12 +201,12 @@ VersionCompare(version1, version2)
 		 if (verB%A_Index% > verA%A_Index%)
 			return 2
 		}
-	 ; JJ ADD BEGIN
+	 ; MATH ADD BEGIN
 	 if (letter1 > letter 2)
 		 return 1
 	 if (letter2 > letter1)
 		 return 2
-	 ; JJ ADD END
+	 ; MATH ADD END
 	 return 0
 	}
 
@@ -210,4 +247,3 @@ CopyFilesAndFolders(SourcePattern, DestinationFolder, DoOverwrite = false)
 ; AutoHotkey wrapper for Windows native Zip feature
 ; https://github.com/cocobelgica/AutoHotkey-ZipFile
 #include %A_ScriptDir%\ZipFile.ahk
-

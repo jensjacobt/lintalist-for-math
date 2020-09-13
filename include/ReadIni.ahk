@@ -9,7 +9,7 @@ ReadIni()
 	 local ini
 	 ini=%A_ScriptDir%\%IniFile%
 	 IfNotExist, %ini%
-	 	{
+		{
 		 IniWrite, Lintalist, %ini%, Other, FirstStartUp ; this ensures proper encoding of the INI file in UTF-16
 		 CreateDefaultIni()
 		 Gosub, SetShortcuts ; (#Include from main script)
@@ -86,12 +86,28 @@ INISetup:={ AlwaysLoadBundles:     {default:"",find:"bundles\"}
 			, XY:                  {default:"50|50"}
 			, BigIcons:            {default:"1"}
 			, AutoHotkeyVariables: {default:""}
-            , EditorSyntaxHL:      {default:"0"}
+			, EditorSyntaxHL:      {default:"0"}
 			, SnippetEditor:       {default:""} } ; becomes too long 
 
 			IniSetup["EditorHotkeySyntax"]:={default:"0"}
+			IniSetup["Administrator"]:={default:"0"}
+			IniSetup["ShortcutPaste"]:={default:"^v"}
+			IniSetup["ShortcutCopy"]:={default:"^c"}
+			IniSetup["ShortcutCut"]:={default:"^x"}
+			IniSetup["ShortcutQuickSearch"]:={default:"^+{Left}^x"}
+			IniSetup["Statistics"]:={default:"0"}
+			IniSetup["ShortcutSearchGui"]:={default:"1"}
+			IniSetup["QueryDelimiter"]:={default:">"}
+			IniSetup["StartSearchHotkeyToggle"]:={default:"0"}
+			IniSetup["EditorAutoCloseBrackets"]:={default:"[,[[|]]"}
+			IniSetup["EditorSnippetErrorCheck"]:={default:"[["}
+			IniSetup["Theme"]:={default:"default"}
+			IniSetup["ParseEscaped"]:={default:"<SB,>SB,^SB"}
+			IniSetup["QueryAction"]:={default:"0"}
+			IniSetup["QueryScript"]:={default:"RunQuery.ahk"}
+			IniSetup["QueryHotkey"]:={default:"F12"}
 
-; JJ ADD BEGIN
+; MATH ADD BEGIN
 ; Added separately to not get "Expression too long" error
 INISetup["SetStartmenu"]            := {default:"0"}
 INISetup["MathYellowBGHotkey"]      := {default:"#a"}
@@ -102,7 +118,9 @@ INISetup["MathSetUpHotkey"]         := {default:"#w"}
 INISetup["MathSnippetHelperHotkey"] := {default:"#h"}
 INISetup["MathImageHelperHotkey"]   := {default:"#+h"}
 INISetup["MathReloadAllHotkey"]     := {default:"#q"}
-; JJ ADD END      
+; MATH ADD END
+
+	 ShortcutSearchGuiShow:=["1: ","2: ","3: ","4: ","5: ","6: ","7: ","8: ","9: ","0: ", "   "]
 
 	 for k, v in INISetup
 		{
@@ -117,7 +135,7 @@ INISetup["MathReloadAllHotkey"]     := {default:"#q"}
 		 if (%k% = "")
 			%k%:=v.empty
 		 if v.min
-		 	if (%k% < v.min)	
+			if (%k% < v.min)	
 				%k%:=v.min
 		 if v.max
 			if (%k% > v.max)	
@@ -133,6 +151,11 @@ INISetup["MathReloadAllHotkey"]     := {default:"#q"}
 			 IconSize:=32
 			}
 
+		if (Theme = "default")
+			Theme:=""
+		else
+			Theme:=StrSplit(Theme,".").1
+				
 		StringSplit, ColumnWidthPart, ColumnWidth, -
 
 		if (ColumnSort <> "NoSort")
@@ -140,7 +163,7 @@ INISetup["MathReloadAllHotkey"]     := {default:"#q"}
 			 StringSplit, ColumnSortOption, ColumnSort, -
 			 if (ColumnSortOption1 = "Part1")
 				ColumnSortOption1:=1
-			 else	
+			 else
 				ColumnSortOption1:=2
 			}
 
@@ -160,11 +183,48 @@ INISetup["MathReloadAllHotkey"]     := {default:"#q"}
 		Else
 			ShowGrid = Grid
 
-		If (BigIcons = 1)
+	 If RegExMatch(QueryDelimiter,"^\s*\\s")
+	 	QueryDelimiter:=" "
+	 else
+	 	QueryDelimiter:=SubStr(Trim(QueryDelimiter),1,1) ; only use first char if a string was entered
+
+	 ParseEscapedArray:=StrSplit(ParseEscaped,",")
+
+	 
+	 If !FileExist(A_ScriptDir "\" QueryScript) and (QueryAction = 1)
+			FileAppend, `; See QueryAction`, QueryHotkey`, and QueryScript in settings.ini`nMsgBox `%0`% params: `%1`% `%2`% `%3`% `%4`% `%5`% `%6`% `%7`% `%8`% `%9`%`n, %A_ScriptDir%\%QueryScript%
+	 Hotkey, IfWinActive, Lintalist snippet editor
+	 If (Trim(EditorAutoCloseBrackets) <> "") 
+	 	Loop, parse, EditorAutoCloseBrackets, `;
+	 		Hotstring(":*:" StrSplit(A_LoopField,",").1, Func("AutoCloseBrackets").Bind(StrSplit(A_LoopField,",").2))
+	 Hotkey, IfWinActive
 
 	 ReadCountersIni()
 	 ReadPlaySoundIni()
-	}                         
+
+	 ; this same code is also in lintalist.ahk - SaveSettings: 
+	 ; just make sure these specific settings have a value so reloading/restarting works better 
+	 ; (when updateing AHK via the official installer script it seems some settings are lost)
+	 IniListFinalCheck:="Lock,Case,ShorthandPaused,ShortcutPaused,ScriptPaused"
+	 Loop, parse, IniListFinalCheck, CSV
+		If %A_LoopField% is not number
+			%A_LoopField%:=0
+
+	 If (ColumnSort <> "NoSort")
+	 	ShortCutSearchGui:=0
+
+	 ; See GuiCheckXYPos.ahk
+	 ; for Choice and Editor position so we can always SET a value #121
+	 GuiCheckXYPos:={ EditorX:100
+		, EditorY:100
+		, EditorWidth:740
+		, EditorHeight:520
+		, ChoiceX:300
+		, ChoiceY:300
+		, ChoiceWidth:410
+		, ChoiceHeight:300 }
+
+	}
 
 Append2Ini(Setting,file)
 	{
@@ -177,19 +237,19 @@ ReadCountersIni()
 	{
 	 Global
 	 If (Counters <> 0) or (Counters <> "")
-	 	{
-	 	 LocalCounter_0=
-	 	 Loop, parse, counters, |
-	 	 	{
-	 	 	 If (A_LoopField = "")
-	 	 	 	Continue
-	 	 	 StringSplit, _ctemp, A_LoopField, `,
-	 	 	 LocalCounter_%_ctemp1% := _ctemp2
-	 	 	 LocalCounter_0 .= _ctemp1 ","
-	 	 	 _ctemp1=
-	 	 	 _ctemp2=
-	 	 	}
-	 	}  
+		{
+		 LocalCounter_0=
+		 Loop, parse, counters, |
+			{
+			 If (A_LoopField = "")
+				Continue
+			 StringSplit, _ctemp, A_LoopField, `,
+			 LocalCounter_%_ctemp1% := _ctemp2
+			 LocalCounter_0 .= _ctemp1 ","
+			 _ctemp1=
+			 _ctemp2=
+			}
+		}
 	}
 
 ReadPlaySoundIni()
@@ -198,7 +258,7 @@ ReadPlaySoundIni()
 	 local ini
 	 ini=%A_ScriptDir%\Sound.ini
 	 IfNotExist, %ini%
-	 	FileCopy, %A_ScriptDir%\Extras\sounds\Sound.ini.txt, %ini%
+		FileCopy, %A_ScriptDir%\Extras\sounds\Sound.ini.txt, %ini%
 	 IniRead, playsound_1_open , %ini%, 1, open,  %A_Space%
 	 IniRead, playsound_1_paste, %ini%, 1, paste, %A_Space%
 	 IniRead, playsound_1_close, %ini%, 1, close, %A_Space%
@@ -209,7 +269,7 @@ ReadPlaySoundIni()
 	 IniRead, playsound_3_paste, %ini%, 3, paste, %A_Space%
 	 IniRead, playsound_3_close, %ini%, 3, close, %A_Space%
 	}
-	
+
 CreateDefaultIni()
 	{
 	 Global IniFile
@@ -239,7 +299,7 @@ IniDelete, %A_ScriptDir%\%IniFile%, Other ; now we can delete this section creat
 CreateDefaultUserIncludes(file)
 	{
 	 IfExist, %A_ScriptDir%\plugins\My%file%.ahk
-	 	Return
+		Return
 	 FileAppend,
 (join`r`n
 `/* 
@@ -256,4 +316,3 @@ See "readme-howto.txt" for more information.
 
 ), %A_ScriptDir%\plugins\My%file%.ahk
 	}
-

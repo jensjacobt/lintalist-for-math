@@ -229,7 +229,7 @@ SendEvent {SHIFT DOWN}{TAB 3}{SHIFT UP}{Enter}
 GetClientSize(WinExist(), w, h)
 ;~ MsgBox, Width: %w%`nHeight: %h% ; for debugging
 Sleep, 250
-ImageSearch, FoundX, FoundY, 0, 0, w, h, *5 %A_ScriptDir%\icons\img-col.png
+ImageSearch, FoundX, FoundY, 0, 0, w, h, *5 %A_ScriptDir%\math\img-col.png
 if(ErrorLevel <> 0)
 	MsgBox, Fejl %ErrorLevel%
 FoundX := FoundX + 3

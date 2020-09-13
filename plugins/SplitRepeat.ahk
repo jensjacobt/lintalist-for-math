@@ -1,9 +1,10 @@
 ﻿/* 
 Plugin        : SplitRepeat [Standard Lintalist]
 Purpose       : Split input into variables and repeat snippet
-Version       : 1.1
+Version       : 1.2
 
 History:
+- 1.2 Fix https://github.com/lintalist/lintalist/issues/116
 - 1.1 Adding named split - Lintalist v1.7
 - 1.0 first version
 */
@@ -15,18 +16,18 @@ GetSnippetSplitRepeat:
 ;			Break
 		 named:=Trim(StrSplit(StrSplit(PluginText,"=").1,"_").2,"[]")
 		 if (named <> "")
-		 	named:="_" named
+			named:="_" named
 
-         sp:={}
-         spsingle:=""
-         StringReplace, clip, clip, %PluginText%`n, , All
-         StringReplace, clip, clip, %PluginText%, , All
+		 sp:={}
+		 spsingle:=""
+		 StringReplace, clip, clip, %PluginText%`n, , All
+		 StringReplace, clip, clip, %PluginText%, , All
 		 spwhat:=StrSplit(PluginOptions,"|").1
-         If (spwhat = "clipboard")
+		 If (spwhat = "clipboard")
 			spwhat:=ClipSet("g",1,SendMethod) ; restore
 		 else If (spwhat = "selected")
 			{
-			 ClipSet("s",1,SendMethod) ; safe current content and clear clipboard
+			 ClipSet("s",1,SendMethod,Clipboard) ; safe current content and clear clipboard
 			 ClearClipboard()
 			 SendKey(SendMethod, "^c")
 			 spwhat:=clipboard
@@ -50,7 +51,7 @@ GetSnippetSplitRepeat:
 					 for column,cell in v ; msgbox % row "," a_index
 						{
 						 StringReplace, spRowText, spRowText, % "[[sp" named "=" row "," A_Index "]]", % cell, All
-						} 
+						}
 					}
 				 spRowOutput .= spRowText
 				} 
@@ -67,7 +68,7 @@ GetSnippetSplitRepeat:
 					 StringReplace, spRowText, spRowText, [[sp%named%=%k%]], %v%, All
 					}
 				 spRowOutput .= spRowText
-				}	
+				}
 			}	
 		 clip:=RTrim(spRowOutput,"`n")
 		 spRowOutput:=""
@@ -84,7 +85,7 @@ GetSnippetSplitRepeat:
 		 ProcessTextString:=""
 		 if (named = "")
 			named:="="
-	 	 If (InStr(Clip, "[[SplitRepeat" named) = 0) or (A_Index > 100)
+		 If (InStr(Clip, "[[SplitRepeat" named) = 0) or (A_Index > 100)
 			Break
 
 		}

@@ -37,14 +37,14 @@ Else
 	 FP_Args:=Chr(34) A_ScriptDir "\lintalist.ahk" Chr(34)
 	}
 
-If (SetDesktop = 1 or SetDesktop_Start = 1)
+If (SetDesktop = 1)
 	{
 	 FP_Dir:=A_Desktop
 	 Gosub, SetShortcut
 	}
 else
 	FileDelete, %A_Desktop%\Lintalist for Math.lnk
-If (SetStartup = 1 or SetStartup_Start = 1)
+If (SetStartup = 1)
 	{
 	 FP_Dir:=A_Startup
 	 Gosub, SetShortcut
@@ -53,7 +53,7 @@ else
 	FileDelete, %A_Startup%\Lintalist for Math.lnk
 Return
 
-If (SetStartmenu = 1 or SetStartmenu_Start = 1)
+If (SetStartmenu = 1)
 	{
 	 FP_Dir:=A_StartMenu
 	 Gosub, SetShortcut

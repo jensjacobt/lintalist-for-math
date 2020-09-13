@@ -1,3 +1,125 @@
+### v1.9.13
+
+* New/Fix: "Update lintalist" could fail  
+  - (1) if there was a space in the path https://github.com/lintalist/lintalist/issues/154  
+  but also if the path "includes characters that cannot be used in a compressed folder"   
+  As an alternative it now detects if the console version of 7-zip is present, if so use that  
+  instead of the native Windows ZIP function. See docs\Update.md for instructions.  
+  - (2) missing %A_AhkPath% in Restart routine https://github.com/lintalist/lintalist/issues/163
+* Fix: potentially incorrect position of listbox in choice plugin
+
+### v1.9.12
+
+* New: you can now escape [[ and ]] in snippets - https://github.com/lintalist/lintalist/issues/162
+  and additionaly use [,],| in options using alternative notations: <SB, >SB, ^SB (see ParseEscaped in settings.ini)
+* New: paste HTML code from clipboard (if present) in the editor https://github.com/lintalist/lintalist/issues/59 
+* New: Run Query string using special hotkey (hidden expert option) https://github.com/lintalist/lintalist/issues/153
+* Fix: if there are no search results, disable edit, copy, move, delete
+* Further improvements for NVDA users
+  - disable tooltip in toolbar https://github.com/lintalist/lintalist/issues/161
+  - reporting snippet/listview contents to NVDA https://github.com/lintalist/lintalist/issues/159
+
+### v1.9.11
+
+* New: Theme support incl. updating all listview icons with transparency.
+* New: <kbd>ctrl</kbd>+<kbd>f</kbd> shortcut to focus on search box in Lintalist GUI, <kbd>TAB</kbd> to set focus on Listview (results) https://github.com/lintalist/lintalist/issues/148
+* Changed how UP/DOWN are handled in the search results (related to TAB above)
+* Check for certain programs that might conflict with the standard Start search hotkey (capslock). Only NVDA for now. #148
+* New: Optional AfterPaste.ahk to allow additional actions after copy or paste (example: let NVDA speak the snippet text) https://github.com/lintalist/lintalist/issues/150
+* Update: Default.ahk make ShortcutCopy, ShortcutPaste, ShortcutCut available in Scripts as well. Changed timing of PasteDelay.
+* Update: TitleCase() v1.41 https://github.com/lintalist/TitleCase
+* Fix: StayOnMonitor to prevent searching GUI being displayed above the top of the monitor
+
+### v1.9.10
+
+* New: Comment plugin - add comment to snippet which will be removed before pasting. Use as visual reminder or search aid.
+* New: On Top button/option in Search Window <kbd>ctrl</kbd>+<kbd>t</kbd> (per search)
+* New: Option to show/hide the Search Window with the same shortcut (StartSearchHotkeyToggle setting)
+* New: View menu in Search Window to toggle wide/narrow window and On Top
+* New: Make a 64-bit version available for download as well (a renamed AutoHotkeyU64.exe)
+* New: EditorAutoCloseBrackets setting to define some editor hotstrings, example `[` -> `[[|]]`
+* Change: More flexible plugin check syntax in Editor (was too strict with regards to `[[..]]`). (EditorSnippetErrorCheck setting) 
+* Fix/Change: Disable Search GUI shortcuts when using the non-default ColumnSort setting (NoSort) 
+
+### v1.9.9
+
+* New: Search GUI shortcuts for first 10 search result (Alt+1..0) - show numbers as text and/or icons.  
+  Settings: ShortCutSearchGui - https://github.com/lintalist/lintalist/issues/137
+* New: String plugin to transform text (upper, lower, sentence, title case, trim...)
+* New: Query plugin and QueryDelimiter setting. Use (parts of) search query in Snippets, see docs and  
+  https://github.com/lintalist/lintalist/issues/136
+* New: Editor - 'shortcuts' (Keyboard accelerators) for the (Edit) controls
+* Change: removed Pgdown and Pgup hotkeys, no longer worked correctly and not all that useful
+* Change/fix: Change how Col2, Col3, and Col4 are set for listview columns to prevent accidental hiding of columns  
+  https://github.com/lintalist/lintalist/issues/126  
+* Fix: Choice plugin Cancel/Esc not storing position properly
+* Fix: Pausing / Enabling Shortcuts didn't work correctly, worked only after restart
+* Update TitleCase() to v1.2 https://github.com/lintalist/TitleCase
+
+### v1.9.8.4
+
+* Change: merge search string (SearchThis1,SearchThis2,SearchThis3) to allow for easier searching  
+* Change: Use external script (restart.ahk) to restart to prevent possible "Could not close the previous instance of this script" message https://github.com/lintalist/lintalist/issues/127#issuecomment-496279719   
+* Change/fix: MaxRes=30 in Ini (recommended setting anyway) + ObjectBundles.ahk https://github.com/lintalist/lintalist/issues/127#issuecomment-496279719  
+* Change: Statistics = 3 option to save Statistics in A_UserName-Statistics.ini (on request https://github.com/lintalist/lintalist/issues/112#issuecomment-494350363)  
+
+### v1.9.8.3
+
+* Fix: unexpected () characters deletion for plugin content ending with ()]] not being a function  
+  https://github.com/lintalist/lintalist/issues/125
+* New: Allow ^$ to be used as alternative notation for Caret plugin (^|)  
+  https://github.com/lintalist/lintalist/issues/124
+* New: Use Font and FontSize setting in Editor as well (Part1, Part2, Script)  
+  https://github.com/lintalist/lintalist/issues/122
+
+### v1.9.8.2
+
+* Fix: Improve CheckLineFeed by using RegEx to catch all CR, LF, and CRLF
+
+### v1.9.8.1
+
+* Fix: additional safety check for positioning Editor and Choice plugin windows to prevent error  
+  https://github.com/lintalist/lintalist/issues/121
+
+### v1.9.8
+
+* New: [[FileList]] plugin returns list of file names from folder - see DOC for all available options
+* New: [[Choice]] Search (filter as you type) option for Choice by adding ! similar to ? Question help/text;  
+       Allow user to resize Choice GUI; Use FontSize for Choice GUI (in the listbox) incl. Auto Center checkbox
+* New: Editor save size and position (resize by dragging window border)
+* New: Optional Statistics (see Configuration) https://github.com/lintalist/lintalist/issues/112
+* New: added :hover 'permalink' helpers for most headings etc using visible pilcrow (¶) in DOC
+* Fixed: ClipSet("s") call in Lintalist and Selected, Split* plugins - https://github.com/lintalist/lintalist/issues/116
+* Update: ClipSet() now also use ShortcutCopy, ShortcutPaste, ShortcutCut settings.
+* Update: Title case for selected/clipboard plugins now uses TitleCase() for more flexibility  
+  https://github.com/lintalist/lintalist/issues/113 also available as separate function (for AHK) https://github.com/lintalist/TitleCase
+* Update: Incorporate CancelPlugin (avoids SoundPlay and return nicely) in plugins: Calendar, Choice, File and Input
+* Change: Revert change https://github.com/lintalist/lintalist/issues/52 (v1.8)
+* Change: Choice and Editor now use WinWaitClose vs "ugly Loop"
+* Change: LCID values for Calendar and DateTime can now be Hexidecimal values as well (L1036 and L0x040C = French)
+
+### v1.9.7
+
+* New: AltPaste method via INI config - for example to paste in Putty via shift+insert vs ctrl+v - #66  
+  https://github.com/lintalist/lintalist/issues/66 and docs\AltPaste.md
+* New: You can replace linefeed(s)/newline(s) per application via INI config in Linefeed.ini - #65 https://github.com/lintalist/lintalist/issues/65
+* New: You can now define the Copy, Cut, Paste and QuickSearch shortcuts (see settings)
+* New: Run as Administrator command line, Settings, and Tray menu options - #99 https://github.com/lintalist/lintalist/issues/99
+* New: Plugin [[PasteMethod]] similar to global setting but now acts on snippet basis #9 https://github.com/lintalist/lintalist/issues/9
+* New: Alt+Enter and Alt+Shift+Enter in Search GUI just copies snippet to the clipboard (=PasteMethod=2) - #9
+* New: Plugin [[image]] now accepts clipboard as a valid path to an image: [[image=clipboard]]
+* New: Added reset/set option to [[Counter]] plugin
+* New: Open Tray Menu on left mouse click - #101 https://github.com/lintalist/lintalist/issues/101
+* New: Esc closes Lintalist Quick Start Guide - #100 https://github.com/lintalist/lintalist/issues/100
+* New: Tray and Edit menu item "Open Lintalist folder" - #102 https://github.com/lintalist/lintalist/issues/102
+* New: Tray menu click on first item (Program name) opens Search GUI - #102
+* New: Added NumpadUp / NumpadDown for navigation in addition to Up/Down keys - #103 https://github.com/lintalist/lintalist/issues/103
+* New: FixURI() - added A HREF for HTML to check/correct local file uri (file://) as well not just for IMG SRC
+* Fix: removed stray "If (BigIcons..." from ReadIni.ahk
+* Fix: Plugin [[Choice]] resolved crash when having over 9 Choice entries in a snippet - #108 https://github.com/lintalist/lintalist/issues/108
+* Fix: added IniListFinalCheck to ensure all button states are saved with a 0 or 1 value (e.g. not empty)
+* Fix: corrected some typos in Changelog.md and doc\index.html
+
 ### v.1.9.6a (Second release of Lintalist for Math based on 1.9.6 of master)
 
 * Updated to support Maple 2018 (it only fully supports this version of Maple)
@@ -56,7 +178,7 @@
   #76 https://github.com/lintalist/lintalist/issues/76
 * Change: Similar to modal windows for Local variable etc, Snippet editor now modal  
   - see v1.8 #57 https://github.com/lintalist/lintalist/issues/57
-* Fix: Adding support for UTF-8 characters in Local variabe & Counter Editors  
+* Fix: Adding support for UTF-8 characters in Local variable & Counter Editors  
   #78 https://github.com/lintalist/lintalist/pull/78 ht @exetico
 * Fix: ReadIni() now writes in UTF-16 to store settings correctly  
   #77 https://github.com/lintalist/lintalist/issues/77
@@ -65,11 +187,6 @@
 * Fix: Closing and Starting Lintalist in Narrow view mode no longer  
   causes error in GUI with empty 'barx' variable #72 https://github.com/lintalist/lintalist/issues/72  
   (see also #71 above re GuiSettings.ahk)
-
-### v.1.9.2a (First release of Lintalist for Math based on 1.9.2 of master)
-
-* Updated: Now based on v1.9.2 of master (see changes below).
-* Fix: Improved MathSnippetHelper so that it should no longer hang on occasion.
 
 ### v1.9.2
 
@@ -81,42 +198,10 @@
 * Fix: Refactored duplicate hotkey and shorthand detection code, should work better now (editor.ahk)
 * Fix: SetIcon.ahk now also looks at Part2 of the snippet as it should
 
-### v1.9.1a (Initial version of Lintalist for Math)
-
-* New: Hardcoded shortcuts:
-  - Alt + Enter: Edit selected snippet (same as F4).
-  - Ctrl + n: Add new snippet (same as F7).
-  - Delete: Delete selected snippet.
-* New: Hotkeys (which can be changed or disabled in the settings menu):
-  - MathSnippetHelperHotkey (#h). HotKey used to add a new snippet to Lintalist
-    from the selected text (using dialogs).
-  - MathSetUpHotkey (#w). HotKey to set up Maple for commenting. It gives Maple
-    Input a red color, unfolds all sections, and sets zoom to 100 %.
-  - MathPastePureHotkey (#v). HotKey for pasting pure text. This helps with some
-    formatting issues in Maple.
-  - MathYellowBGHotkey (#a). HotKey for Maple. It gives the selected text a
-    yellow background color.
-  - MathOrangeTextHotkey (#z). HotKey for Maple. It gives the selected text a
-    faded orange color.
-  - MathRedTextHotkey (#c). HotKey for Maple. It gives the selected text a red
-    color.
-  - MathReloadAllHotkey (#q). HotKey that loads all bundles and reloads
-    Lintalist for Math.
-* New: Plugins:
-  - Math: A plugin to display math in Maple (and strip output in other programs).
-  - Underline: A plugin to underline text in Maple (but not in other programs).
-* New: Trigger keys added: -, \_
-* Change: Default trigger keys changed from "Tab,Space" to "-, \_".
-* Change: QuickSearchHotkey changed from "#z" to "^#z".
-* Change: Edited the default bundle to include some important shortcuts for
-  Maple and an example for the new plugins (Math og Underline).
-* Change: Disabled update feature (for now).
-* Change: Removed "Snippet succesfully added to bundle [...]" message.
-
 ### v1.9.1
 
 * Fix: At very first startup SetDesktop and SetStartup default settings wouldn't be  
-  properly stored for them to be useable with Func_IniSettingsEditor()
+  properly stored for them to be usable with Func_IniSettingsEditor()
 
 ### v1.9
 
@@ -125,7 +210,7 @@
   (see DOC)
 * Fix: Choice plugin - Reverted back to Loop, works better for multiple  
   Choice plugins https://github.com/lintalist/lintalist/issues/68
-* Fix: Lintalist - Added "Select and press enter" Choice gui to  
+* Fix: Lintalist - Added "Select and press enter" Choice GUI to  
   BundleHotkeys group to disable the possibility of activating Lintalist again
 * Fix: Random plugin - Count correct number of RandomItems (+ 1)
 * New: Introduce "Not Titlematch" for bundles by using an exclamation mark  
@@ -158,7 +243,7 @@
   https://github.com/lintalist/lintalist/issues/57
 * Added: Choice plugin GUI now has "Endless scrolling in a listbox" similar to  
   Search GUI listview + New Random button
-* Fix: Cancelling a snippet with Choice plugin no longer makes Shorthand stop working  
+* Fix: Canceling a snippet with Choice plugin no longer makes Shorthand stop working  
   https://github.com/lintalist/lintalist/issues/52
 * Fix: After using quick search with one result e.g. automatic pasting of the only  
   snippet, pressing space or tab executed the snippet again. Cleared the typing history  
@@ -264,7 +349,7 @@
 
 ### Changelog v1.4.1
 
-* Fix: ShowPreview no longer worked reliabley due to "SetKeyDelay, -1" - removed it
+* Fix: ShowPreview no longer worked reliably due to "SetKeyDelay, -1" - removed it
 * Fix: Somehow Changelog was only partially included.
 
 ### Changelog v1.4
@@ -275,7 +360,7 @@
   https://github.com/lintalist/lintalist/issues/15
 * New: Plugins & Tools menu in Bundle Editor including dynamic submenus for clipboard,
   selected, counter & local variables plugins
-* New: Settting for Single click in listview to act as double click
+* New: Setting for Single click in listview to act as double click
   ht: **dsewq1LYJ** https://github.com/lintalist/lintalist/issues/16
 * New: Command line parameters -Bundle: load specific bundle and lock
   https://github.com/lintalist/lintalist/issues/8
@@ -288,7 +373,7 @@
 
 ### Changelog v1.3.1
 
-* Fix: url fix update version check
+* Fix: URL fix update version check
 
 ### Changelog v1.3
 

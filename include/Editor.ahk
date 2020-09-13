@@ -1,6 +1,6 @@
 ﻿; LintaList Include
 ; Purpose: Bundle & Snippet Editor
-; Version: 1.1
+; Version: 1.5
 ;
 ; Hotkeys used in Search GUI to start Bundle & Snippet Editor
 ; F4  = Edit snippet
@@ -10,11 +10,29 @@
 ; F8  = Delete snippet
 ; 
 ; History: 
+; v1.5 - paste html
+; v1.4 - adding themes
+; v1.3 - 'shortcuts' (Keyboard accelerators) for edit controls
+; v1.2 - Use font/fontsize settings in Editor as well (as in the Search GUI)
 ; v1.1 - Added (optional) Syntax Highlighting for snippets/html/scripts
 ; 
 ; 
 
 BundleEditor:
+Loop, parse, % "lintalist_bundle.png,text_dropcaps.png,hotkeys.ico,shorthand.ico,scripts.ico", CSV
+	{
+	 SplitPath, A_LoopField, , , EditorIconOutExtension, EditorIconOutFileNameNoExt
+	 If Theme {
+		If FileExist(A_ScriptDir "\themes\icons\" EditorIconOutFileNameNoExt "_" Theme["path"] "." EditorIconOutExtension)
+			EditorIcon%EditorIconOutFileNameNoExt%:=A_ScriptDir "\themes\icons\" EditorIconOutFileNameNoExt "_" Theme["path"] "." EditorIconOutExtension
+	 }
+	 else
+	 	EditorIcon%EditorIconOutFileNameNoExt%:=A_ScriptDir "\icons\" EditorIconOutFileNameNoExt "." EditorIconOutExtension
+	}
+EditorIconOutFileNameNoExt:="",EditorIconOutExtension:=""
+
+Gosub, GuiOnTopCheck
+
 InEditMode:=1
 WrapPart1:=1
 WrapPart2:=1
@@ -24,48 +42,109 @@ Codes := { "AHK": { "Highlighter": "HighlightAHK" }
 	, "Snippet": {"Highlighter": "HighlightSnippet"	}
 	, "Plain": { "Highlighter": "" } } 
 
+FGColor:="0x" Theme["EditorTextColor"]
+BGColor:="0x" Theme["EditorBackgroundColor"]
+MainColorComments:="0x" Theme["MainColorComments"]
+MainColorFunctions:="0x" Theme["MainColorFunctions"]
+MainColorKeywords:="0x" Theme["MainColorKeywords"]
+MainColorMultiline:="0x" Theme["MainColorMultiline"]
+MainColorNumbers:="0x" Theme["MainColorNumbers"]
+MainColorPunctuation:="0x" Theme["MainColorPunctuation"]
+MainColorStrings:="0x" Theme["MainColorStrings"]
+AHKColorA_Builtins:="0x" Theme["AHKColorA_Builtins"]
+AHKColorCommands:="0x" Theme["AHKColorCommands"]
+AHKColorDirectives:="0x" Theme["AHKColorDirectives"]
+AHKColorFlow:="0x" Theme["AHKColorFlow"]
+AHKColorKeyNames:="0x" Theme["AHKColorKeyNames"]
+AHKColorKeywords:="0x" Theme["AHKColorKeywords"]
+SnippetsColorAttributes:="0x" Theme["SnippetsColorAttributes"]
+SnippetsColorEntities:="0x" Theme["SnippetsColorEntities"]
+SnippetsColorTags:="0x" Theme["SnippetsColorTags"]
+
+If (FGColor = "0x")
+	FGColor:="0x000000"
+If (BGColor = "0x")
+	BGColor:="0xFFFFFF"
+If (MainColorComments = "0x")
+	MainColorComments:="0x7F9F7F"
+If (MainColorFunctions = "0x")
+	MainColorFunctions:="0x7CC8CF"
+If (MainColorKeywords = "0x")
+	MainColorKeywords:="0xE4EDED"
+If (MainColorMultiline = "0x")
+	MainColorMultiline:="0x7F9F7F"
+If (MainColorNumbers = "0x")
+	MainColorNumbers:="0xF79B57"
+If (MainColorPunctuation = "0x")
+	MainColorPunctuation:="0x000088"
+If (MainColorStrings = "0x")
+	MainColorStrings:="0xCC9893"
+If (AHKColorA_Builtins = "0x")
+	AHKColorA_Builtins:="0xF79B57"
+If (AHKColorCommands = "0x")
+	AHKColorCommands:="0x008800"
+If (AHKColorDirectives = "0x")
+	AHKColorDirectives:="0x7CC8CF"
+If (AHKColorFlow = "0x")
+	AHKColorFlow:="0x008800"
+If (AHKColorFunctions = "0x")
+	AHKColorFunctions:="0x008800"
+If (AHKColorKeyNames = "0x")
+	AHKColorKeyNames:="0xCB8DD9"
+If (AHKColorKeywords = "0x")
+	AHKColorKeywords:="0xCB8DD9"
+If (SnippetsColorAttributes = "0x")
+	SnippetsColorAttributes:="0x7CC8CF"
+If (SnippetsColorEntities = "0x")
+	SnippetsColorEntities:="0xF79B57"
+If (SnippetsColorTags = "0x")
+	SnippetsColorTags:="0x008800"
+
 ; Settings array for the RichCode control
 RichCodeSettings:=
 ( LTrim Join Comments
 {
 	"TabSize": 4,
 	"Indent": "`t",
-	"FGColor": 0x000000,
-	"BGColor": 0xFFFFFF,
-	"Font": {"Typeface": "Arial", "Size": 10},
+	"FGColor": FGColor,
+	"BGColor": BGColor,
+	"Font": {"Typeface": font, "Size": fontsize},
 	
 	"UseHighlighter": True,
 	"WordWrap": False,
 	"HighlightDelay": 200,
 	"Colors": {
-		"Comments":     0x7F9F7F,
-		"Functions":    0x7CC8CF,
-		"Keywords":     0xE4EDED,
-		"Multiline":    0x7F9F7F,
-		"Numbers":      0xF79B57,
-		"Punctuation":  0x000088,
-		"Strings":      0xCC9893,
+		"Comments":     MainColorComments,
+		"Functions":    MainColorFunctions,
+		"Keywords":     MainColorKeywords,
+		"Multiline":    MainColorMultiline,
+		"Numbers":      MainColorNumbers,
+		"Punctuation":  MainColorPunctuation,
+		"Strings":      MainColorStrings,
 		
 		; AHK
-		"A_Builtins":   0xF79B57,
-		"Commands":     0x008800,
-		"Directives":   0x7CC8CF,
-;		"Flow":         0xFF9900,
-		"KeyNames":     0xCB8DD9,
+		"A_Builtins":  AHKColorA_Builtins,
+		"Commands":    AHKColorCommands,
+		"Directives":  AHKColorDirectives,
+		"Flow":        AHKColorFlow,
+		"Functions":   AHKColorFunctions,
+		"KeyNames":    AHKColorKeyNames,
+		"KeyWords":    AHKColorKeywords,
 	
 		; Snippets-HTML
-		"Attributes":   0x7CC8CF,
-		"Entities":     0xF79B57,
-		"Tags":         0x008800 ; plugins
+		"Attributes":   SnippetsColorAttributes,
+		"Entities":     SnippetsColorEntities,
+		"Tags":         SnippetsColorTags ; plugins
 		}
 
 }
 )
 
 ; clear editor vars just to be sure
-; JJ EDIT BEGIN
+; MATH EDIT BEGIN
  Text1:=Trim(MathHelperSnippet, " `t`r`n")
-; JJ EDIT END
+; Text1=
+; MATH EDIT END
  Text2=
  HKey=
  OldKey=
@@ -91,6 +170,8 @@ If (EditMode = "AppendSnippet")
 			 StringSplit, MenuN, A_LoopField, _
 			 ClipQ1 .= MenuName_%MenuN1% "|"
 			} 
+		 OldGui10NoResize:=Gui10NoResize
+		 Gui10NoResize:=1
 		 Gui, 10:Destroy
 		 Gui, 10:+Owner +AlwaysOnTop
 		 Gui, 10:Add, ListBox, w400 h100 x5 y5 vItem gChoiceMouseOK AltSubmit, 
@@ -99,6 +180,13 @@ If (EditMode = "AppendSnippet")
 		 GuiControl, 10: , ListBox1, %ClipQ1%
 		 Gui, 10:Show, w410 h110, Append snippet to bundle:
 		 ControlSend, ListBox1, {Down}, Append snippet to bundle:
+		 Gui10NoResize:=OldGui10NoResize ; fix-to-prevent-resize
+		 OldGui10NoResize:=""            ; fix-to-prevent-resize
+		 Gui10ListboxCheckPosition("Append snippet to bundle:")
+		 WinWaitClose, Append snippet to bundle:
+		 MadeChoice = 1
+
+/*
 		 Loop ; ugly hack: can't use return here because, well it returns and would thus skip the gui and proceed to paste
 			{
 			 If (MadeChoice = 1)
@@ -108,6 +196,7 @@ If (EditMode = "AppendSnippet")
 				}
 			 Sleep 20 ; needed for a specific (old) ahk_l version, if no sleep CPU usages jumps to 50%, no responding to hotkeys and no tray menu
 			}
+*/			
 		}
 	 paste:=AppendToBundle
 	}
@@ -130,6 +219,8 @@ If (EditMode = "MoveSnippet")
 			Break
 		}		
 	 StringSplit, HkHm, ClipQ1, |	
+	 OldGui10NoResize:=Gui10NoResize
+	 Gui10NoResize:=1
 	 Gui, 10:Destroy
 	 Gui, 10:+Owner +AlwaysOnTop
 	 Gui, 10:Add, ListBox, w400 h100 x5 y5 vItem gChoiceMouseOK AltSubmit, 
@@ -138,6 +229,13 @@ If (EditMode = "MoveSnippet")
 	 GuiControl, 10: , ListBox1, %ClipQ1%
 	 Gui, 10:Show, w410 h110, Move snippet to bundle:
 	 ControlSend, ListBox1, {Down}, Move snippet to bundle:
+	 Gui10NoResize:=OldGui10NoResize ; fix-to-prevent-resize
+	 OldGui10NoResize:=""            ; fix-to-prevent-resize
+	 Gui10ListboxCheckPosition("Move snippet to bundle:")
+	 WinWaitClose, Move snippet to bundle:
+	 MadeChoice = 1
+
+/*
 	 Loop ; ugly hack: can't use return here because, well it returns and would thus skip the gui and proceed to paste
 		{
 		 If (MadeChoice = 1)
@@ -147,6 +245,7 @@ If (EditMode = "MoveSnippet")
 			}
 		 Sleep 20 ; needed for (old) ahk_l, if no sleep CPU usages jumps to 50%, no responding to hotkeys and no tray menu
 		}	 
+*/		
 	 If (EditMode = "")
 		Return
 	 Text1:=     Snippet[Paste1,Paste2,1] ; part 1 (enter, or shortcut, or shorthand)
@@ -209,62 +308,90 @@ Filename:=Filename_%paste1%
 
 ActionText:=StrReplace(RegExReplace(EditMode,"([A-Z])"," $1"),"Append","New")
 
+Gui, 71:Destroy
+If Theme["MainBackgroundColor"]
+	Gui, 71: Color, % Theme["MainBackgroundColor"]
 Gui, 71:+Owner +Resize +MinSize740x520
 Gui, 71:Default
 Gui, 71:Menu, MenuBar2
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
 Gui, 71:font,s12 bold
 Gui, 71:Add, Text,     x600   y10 vActionText, %ActionText%
 Gui, 71:font,s10 normal
-Gui, 71:Add, Picture , x20    y10 w16 h16, %A_ScriptDir%\icons\lintalist_bundle.png
+Gui, 71:Add, Picture , x20    y10 w16 h16, %EditorIconlintalist_bundle%
 Gui, 71:Add, Text    , x40    y13               , Bundle:`t%A_Space%%A_Space%%A_Space%%Name%
 Gui, 71:Add, Text    , x340   y13               , File:%A_Space%%A_Space%%A_Space%%Filename%
 Gui, 71:Add, Text,     x20    y45 w700 h1 0x10 vTextLine
-Gui, 71:Add, Picture , x20    y65 w16 h16, %A_ScriptDir%\icons\hotkeys.ico
-Gui, 71:Add, Text    , x40    y65                  , Hotkey: 
+Gui, 71:Add, Picture , x20    y65 w16 h16, %EditorIconhotkeys%
+Gui, 71:Add, Text    , x40    y65               , Hotke&y: 
 
 If !EditorHotkeySyntax
 	{
 	 Gui, 71:Add, Hotkey  , xp+50  y63  w140 h20 vHKey  , %HKey%
-	 Gui, 71:Add, Checkbox, xp+150 y65  w70  h20 vWinKey %checked%, Win
+	 Gui, 71:Add, Checkbox, xp+150 y65  w70  h20 vWinKey %checked%, &Win
 	}
 else If EditorHotkeySyntax
 	{
+	 Gui, 71: font, cBlack ; to avoid illegible text in shorthand (white on white for example)
 	 Gui, 71:Add, Edit  , xp+50  y63  w140 h20 vHKey  , %HKey%
 	 Gui, 71:Add, Link, xp+150 y65  w70  h20 , [<a href="https://autohotkey.com/docs/Hotkeys.htm">AHK Docs</a>]
 	}
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
 
-Gui, 71:Add, Picture , xp+80  y65  w16 h16, %A_ScriptDir%\icons\shorthand.ico
-Gui, 71:Add, Text    , xp+20  y65  w150 h20           , Shorthand: 
+Gui, 71:Add, Picture , xp+80  y65  w16 h16, %EditorIconshorthand%
+Gui, 71:Add, Text    , xp+20  y65  w150 h20           , Sh&orthand: 
+Gui, 71: font, cBlack ; to avoid illegible text in shorthand (white on white for example)
 Gui, 71:Add, Edit    , xp+70  y63  w150 h20 vShorthand, %Shorthand%
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
+Gui, 71:Add, Picture , x20    y100 w16 h16 vPicture1, %EditorIcontext_dropcaps%
+Gui, 71:Add, Text    , x40    y100  vText1Label       , Part &1 (Enter)
 
-Gui, 71:Add, Picture , x20    y100 w16 h16 vPicture1, %A_ScriptDir%\icons\text_dropcaps.png
-Gui, 71:Add, Text    , x40    y100  vText1Label       , Part 1 (Enter)
-
+Gui, 71:Font,s%fontsize%,%font%
 If EditorSyntaxHL
 	RC1 := new RichCode(RichCodeSettings.Clone(), "x20 y120 w700 h120 vText1")
 else
-	Gui, 71:Add, Edit    , x20    y120  h120 w700 vText1  , %Text1%
+{
+	Gui, 71:Add, Edit    , x20    y120  h120 w700 vText1  HwndEditText1, %Text1%
+	}
 
-Gui, 71:Add, Picture , x20    yp+125 w16 h16 vPicture2, %A_ScriptDir%\icons\text_dropcaps.png
-Gui, 71:Add, Text    , x40    yp    vText2Label      , Part 2 (Shift-Enter)
+Gui, 71:Font,
+
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
+Gui, 71:font,s10 normal
+Gui, 71:Add, Picture , x20    yp+125 w16 h16 vPicture2, %EditorIcontext_dropcaps%
+Gui, 71:Add, Text    , x40    yp    vText2Label      , Part &2 (Shift-Enter)
+Gui, 71:Font,s%fontsize%,%font%
 If EditorSyntaxHL
 	RC2 := new RichCode(RichCodeSettings.Clone(), "x20 yp+20 w700 h90 vText2")
-else	
-	Gui, 71:Add, Edit    , x20    yp+20 h90 w700 vText2  , %Text2%
+else
+	Gui, 71:Add, Edit    , x20    yp+20 h90 w700 vText2  HwndEditText2, %Text2%
+Gui, 71:Font,
 
-Gui, 71:Add, Picture , x20    yp+95 w16 h16 vPicture3, %A_ScriptDir%\icons\scripts.ico
-Gui, 71:Add, Text    , x40    yp    vText3Label              , Script
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
+Gui, 71:font,s10 normal
+Gui, 71:Add, Picture , x20    yp+95 w16 h16 vPicture3, %EditorIconscripts%
+Gui, 71:Add, Text    , x40    yp    vText3Label              , Scrip&t
+Gui, 71:Font,s%fontsize%,%font%
 If EditorSyntaxHL
 	RC3 := new RichCode(RichCodeSettings.Clone(), "x20 yp+20 w700 h90 vScript")
 else
-	Gui, 71:Add, Edit    , x20    yp+20 h90 w700 vScript , %Script%
+	Gui, 71:Add, Edit    , x20    yp+20 h90 w700 vScript HwndEditScript, %Script%
+Gui, 71:Font,
 
+If Theme["EditorGuiTextColor"]
+	Gui, 71: font, % "c" Theme["EditorGuiTextColor"]
 Gui, 71:font, s8, arial
 If EditorSyntaxHL
 	Gui, 71:Add, Text, x400 y102 h16 w200, Note: press Ctrl+W to toggle Word Wrap
 Gui, 71:Add, Button, x610 y100 h20 w110 0x8000 g71EditPart1  vEditorButton1, 1 - Edit in Editor ; part1
 Gui, 71:Add, Button, x610 y245 h20 w110 0x8000 g71EditPart2  vEditorButton2, 2 - Edit in Editor ; part2
 Gui, 71:Add, Button, x610 y360 h20 w110 0x8000 g71EditScript vEditorButton3, 3 - Edit in Editor ; script
+
 Gui, 71:font, s10
 
 Gui, 71:Add, Button, x20    y480 h30 w210 g71Save     vActionButton1, &Save
@@ -283,11 +410,30 @@ If EditorSyntaxHL
 	 RC3.Value := Script
 	}
 
-Gui, 71:Show, w740 h520, Lintalist snippet editor
+If !EditorSyntaxHL
+	{
+	 CtlColors.Attach(EditText1 , Theme["EditorBackgroundColor"],Theme["EditorTextColor"])
+	 CtlColors.Attach(EditText2 , Theme["EditorBackgroundColor"],Theme["EditorTextColor"])
+	 CtlColors.Attach(EditScript, Theme["EditorBackgroundColor"],Theme["EditorTextColor"])
+	}
+
+GuiCheckXYPos()
+DetectHiddenWindows, On
+Try
+	{
+	 Gui, 71:Show, Hide w740 h520 x%EditorX% y%EditorY%, Lintalist snippet editor
+	 WinMove, Lintalist snippet editor, , %EditorX%, %EditorY%, %EditorWidth%, %EditorHeight%
+	}
+Catch
+	Gui, 71:Show, Hide w740 h520, Lintalist snippet editor
+DetectHiddenWindows, Off
+
+Gui, 71:Show
+
 WinActivate, Lintalist snippet editor
 If EditorSyntaxHL
 	GuiControl, Focus, % RC1.hWnd
-; JJ ADD BEGIN
+; MATH ADD BEGIN
 Else if (MathHelperSnippet != "") 
 {
 	If !EditorHotkeySyntax
@@ -296,9 +442,12 @@ Else if (MathHelperSnippet != "")
 		ControlFocus, Edit2, Lintalist snippet editor ; Focus Shorthand
 	MathHelperSnippet := ""
 }
-; JJ ADD END
-else	
-	ControlFocus, Text1, Lintalist snippet editor
+; MATH ADD END
+else
+	;ControlFocus, Text1, Lintalist snippet editor
+	GuiControl, Focus, Text1
+
+
 
 Return
 
@@ -359,10 +508,14 @@ If (EditMode = "EditSnippet")
 Else If (EditMode = "AppendSnippet") or (EditMode = "CopySnippet") or (EditMode = "MoveSnippet") 
 	Check:=AppendToBundle
 
-If !SnippetErrorCheck(Text1,"[[") or !SnippetErrorCheck(Text2,"[[")
+If EditorSnippetErrorCheck
 	{
-	 MsgBox,48,Warning, Possible Plugin/function error in Snippet.`nMismatch number of square brackets "[[" and "]]".
-	 Return
+	 If !SnippetErrorCheck(Text1,EditorSnippetErrorCheck) or !SnippetErrorCheck(Text2,EditorSnippetErrorCheck)
+    	{
+    	 MsgBox,52,Warning, Possible Plugin/function error in Snippet.`nMismatch number of square brackets.`n`n(see EditorSnippetErrorCheck setting)`n`nDo you want to continue editing the snippet? (Yes)`nSelect No to ignore error(s) and save Edits.
+    	 IfMsgBox, Yes
+    	 	Return
+    	}
 	}
 
 ; EditorHotkeySyntax: check valid hotkey
@@ -446,6 +599,7 @@ Else If (EditMode = "AppendSnippet") or (EditMode = "CopySnippet") or (EditMode 
 
 	 ;Snippet[AppendToBundle].Push({1:Text1,2:Text2,3:HKey,4:Shorthand,5:Script,"1v":FixPreview(Text1),"2v":FixPreview(Text2)})
 	 Snippet[AppendToBundle].InsertAt(1,{1:Text1,2:Text2,3:HKey,4:Shorthand,5:Script,"1v":FixPreview(Text1),"2v":FixPreview(Text2)})
+	 Snippet[AppendToBundle,"Save"]:=1  ; added 11/12/2018 fix movesnippet
 
 /*
 	 Snippet[AppendToBundle,"Save"]:=1
@@ -482,6 +636,10 @@ Else If (EditMode = "AppendSnippet") or (EditMode = "CopySnippet") or (EditMode 
  ;  File= 
  ;  File .= A_ScriptDir "\bundles\" FileName_%AppendToBundle% ; debug 04/04/2018
     File := A_ScriptDir "\bundles\" Filename ; debug 04/04/2018
+    If (FileName = "")
+    	File:=A_ScriptDir "\bundles\" FileName_%AppendToBundle%
+If !(EditMode = "MoveSnippet") ; added 11/12/2018 fix movesnippet
+	{
 	IfNotInString, File, .txt
 		{
 		 MsgBox, 48, Error, ERROR: Can not append snippet to Bundle (No file name available)`nBundle: %File%`n`nDo you wish to Reload?
@@ -491,16 +649,17 @@ Else If (EditMode = "AppendSnippet") or (EditMode = "CopySnippet") or (EditMode 
 	Else
 		{	
 		 FileAppend, %Append%, %file%, UTF-8
-		; JJ EDIT BEGIN
+		; MATH EDIT BEGIN
 		If (ErrorLevel <> 0)
 			MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
 		; If (ErrorLevel = 0)
 		; 	MsgBox, 64, Snippet succesfully added to bundle, % File "`n" Append
 		; Else
 		; 	MsgBox, 48, Error, % "ERROR: Could not append snippet to Bundle`n`n" File "`n" Append
-		; JJ EDIT END
+		; MATH EDIT END
 		} 
 		Counter:=AppendToBundle
+	}
 	}
 Else If (EditMode = "NewBundle")
 	{
@@ -538,6 +697,7 @@ Patterns:
 
 ), %file%, UTF-8
 
+	 Gosub, 71GuiSavePos
 	 Gui, 1:-Disabled
 	 Gui, 71:Destroy
 	 Gui, 1:Destroy
@@ -550,7 +710,7 @@ ArrayName=List_
 HotKeyHitList_%Counter%:=Chr(5)    ; clear
 ShortHandHitList_%Counter%:=Chr(5) ; clear
 ; MsgBox % Counter
-If (OldKey <> "") ; and (OldKey <> HKey)
+If (OldKey <> "") and (OldKey <> HKey) ; only turn off when the hotkey has changed
 	{
 	 Hotkey, IfWinNotActive, ahk_group BundleHotkeys
 	 Hotkey, % "$" . OldKey, Off ; set old hotkey off ...
@@ -577,6 +737,7 @@ Loop, % Snippet[Counter].MaxIndex() ; LoopIt
 	}
 
 
+Gosub, 71GuiSavePos
 Gui, 1:-Disabled
 Gui, 71:Destroy
 if (AlwaysUpdateBundles = 1)
@@ -593,13 +754,45 @@ WinActivate, %AppWindow%
 WinWaitActive, %AppWindow%
 LoadBundle(Load)
 UpdateLVColWidth()
-ControlFocus, Shorthand, %AppWindow%
 Gosub, SetStatusBar	
 lasttext = fadsfSDFDFasdFdfsadfsadFDSFDf
 Gosub, GetText
+;LV_Modify(SelItem, "Select") ; set focus on snippet we edited in listview
+;LV_Modify(SelItem, "Vis")    ; doesn't work yet as DOWN starts at row 1 again
+;Sleep 10
+ControlFocus, Edit1, %AppWindow%
 ShowPreview(PreviewSection)
 InEditMode = 0
+If OnTopStateSaved
+	Gosub, GuiOnTopCheck
 Return
+
+PasteHTMLEdit:
+If !WinClip.HasFormat(49351)
+	Return
+ControlGet, ControlID, Hwnd,, %control%, Lintalist snippet editor
+PasteFromHTML(WinClip.GetHTML())
+If EditorSyntaxHL
+	{
+	 SendMessage, 0x302, 0, 0, , ahk_id %ControlID%
+	}
+else
+	{
+	 Control, EditPaste, %clipboard%, %Control%, Lintalist snippet editor
+	}
+Return
+
+PasteFromHTML(in)
+	{
+	 in:=RegExReplace(in,"iUs)^.*<htm","[[html]]<htm")
+	 in:=StrReplace(in,"<!--StartFragment-->")
+	 in:=StrReplace(in,"<!--EndFragment-->")
+	 ; we need to go from UTF-8 bytes to Unicode text to prevent Ã, Ã¨, etc
+	 clipsize := StrPut(in, "CP0")
+	 VarSetCapacity(cliptemp, clipsize)
+	 StrPut(in, &cliptemp, "CP0")
+	 clipboard:=StrGet(&cliptemp, "UTF-8")
+	}
 
 71EditPart1:
 EditControlInEditor("Text1")
@@ -677,16 +870,23 @@ Return
 
 71GuiEscape:
 71GuiClose:
-
+Gosub, 71GuiSavePos
 Gui, 1:-Disabled
 Gui, 71:Destroy
 WinActivate, %AppWindow%
 InEditMode = 0
-ControlFocus, Shorthand, %AppWindow%
+ControlFocus, Edit1, %AppWindow%
+If OnTopStateSaved
+	Gosub, GuiOnTopCheck
 Return
 
 SnippetErrorCheck(in,type)
 	{
+	 if (type = "[")
+		{
+		 if (CountString(in, "[") = CountString(in, "]"))
+			Return 1
+		}
 	 if (type = "[[")
 		{
 		 if (CountString(in, "[[") = CountString(in, "]]"))
@@ -699,5 +899,45 @@ SnippetErrorCheck(in,type)
 #include %A_ScriptDir%\include\richcode\SnippetHTML.ahk
 #include %A_ScriptDir%\include\richcode\Util.ahk
 
+EditorWindowPosition:
+IniRead, EditorX     , %A_ScriptDir%\session.ini, editor, EditorX, 100
+IniRead, EditorY     , %A_ScriptDir%\session.ini, editor, EditorY, 100
+IniRead, EditorWidth , %A_ScriptDir%\session.ini, editor, EditorWidth, 740
+IniRead, EditorHeight, %A_ScriptDir%\session.ini, editor, EditorHeight, 520
+Return
+
+71GuiSavePos:
+WinGetPos, EditorX, EditorY, EditorWidth, EditorHeight, Lintalist snippet editor
+Return
+
+EditorWindowPositionSave:
+IniWrite, %EditorX%     , %A_ScriptDir%\session.ini, editor, EditorX
+IniWrite, %EditorY%     , %A_ScriptDir%\session.ini, editor, EditorY
+IniWrite, %EditorWidth% , %A_ScriptDir%\session.ini, editor, EditorWidth
+IniWrite, %EditorHeight%, %A_ScriptDir%\session.ini, editor, EditorHeight
+Return
+
 EditorHotkeySyntaxDummyLabel:
+Return
+
+; used in ReadIni for EditorAutoCloseBrackets settings
+AutoCloseBrackets(in)
+	{
+	 ControlGetFocus, Control, A
+	 what:=StrReplace(in,"|")
+	 Left:=StrLen(StrSplit(in,"|").2)
+	 Control, EditPaste, %what%, %Control%, Lintalist snippet editor
+	 Send {left %left%}
+	}
+
+ReadThemeEditorIcons:
+Loop, parse, % "lintalist_bundle.png,text_dropcaps.png,hotkeys.ico,shorthand.ico,scripts.ico", CSV
+	{
+	 SplitPath, A_LoopField, , , EditorIconOutExtension, EditorIconOutFileNameNoExt
+	 If FileExist(A_ScriptDir "\themes\icons\" EditorIconOutFileNameNoExt "_" Theme["path"] "." EditorIconOutExtension)
+		EditorIcon%EditorIconOutFileNameNoExt%:=A_ScriptDir "\themes\icons\" EditorIconOutFileNameNoExt "_" Theme["path"] "." EditorIconOutExtension
+	 else
+	 	EditorIcon%EditorIconOutFileNameNoExt%:=A_ScriptDir "\icons\" EditorIconOutFileNameNoExt "." EditorIconOutExtension
+	}
+EditorIconOutFileNameNoExt:="",EditorIconOutExtension:=""
 Return
