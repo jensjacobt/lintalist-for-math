@@ -34,8 +34,8 @@ See "readme-howto.txt" for more information.
 
 ; JJ ADD BEGIN
 ; Standard for Lintalist for math:
-#Include %A_ScriptDir%\plugins\Math.ahk
-#Include %A_ScriptDir%\plugins\Underline.ahk
+#Include %A_ScriptDir%\math\Math.ahk
+#Include %A_ScriptDir%\math\Underline.ahk
 ; JJ ADD END
 
 ;----------------------------------------------------------------
